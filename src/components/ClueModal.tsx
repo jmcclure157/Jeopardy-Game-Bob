@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Clue, Player, AnswerCheckResult } from '../types/game';
-import { Check, X, Eye, EyeOff, Clock, UserCheck, Sparkles, Send } from 'lucide-react';
+import { Check, X, Eye, EyeOff, Clock, UserCheck, Sparkles, Send, Volume2 } from 'lucide-react';
 import { soundFx } from '../lib/sound';
 
 interface ClueModalProps {
@@ -44,9 +44,24 @@ export const ClueModal: React.FC<ClueModalProps> = ({
   const [timerRunning, setTimerRunning] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Buzzer key handlers (1, 2, 3 or Space)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['1', '2', '3'].includes(e.key)) {
+        const idx = parseInt(e.key) - 1;
+        if (players[idx]) {
+          setSelectedPlayerId(players[idx].id);
+          soundFx.playTimerTick();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [players]);
+
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
+  }, [selectedPlayerId]);
 
   useEffect(() => {
     if (!timerRunning || timeLeft <= 0) return;
@@ -101,39 +116,41 @@ export const ClueModal: React.FC<ClueModalProps> = ({
   const timePercent = (timeLeft / totalTime) * 100;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-gradient-to-b from-[#060CE9] via-[#0409a8] to-[#020556] border-4 border-amber-400 rounded-2xl shadow-[0_0_60px_rgba(6,12,233,0.8)] p-5 sm:p-8 md:p-10 text-white flex flex-col justify-between min-h-[500px] md:min-h-[580px] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/95 backdrop-blur-md animate-fadeIn">
+      {/* Authentic TV Clue Frame */}
+      <div className="relative w-full max-w-5xl bg-[#060ce9] border-4 sm:border-8 border-black rounded-3xl shadow-[0_0_80px_rgba(6,12,233,0.9)] p-4 sm:p-8 md:p-10 text-white flex flex-col justify-between min-h-[550px] md:min-h-[640px] overflow-hidden tv-screen-scanline">
 
-        {/* Top Header Row */}
-        <div className="flex items-center justify-between border-b-2 border-blue-400/40 pb-4">
-          <div>
-            <span className="text-blue-300 font-bold uppercase tracking-widest text-xs sm:text-sm font-sans block">
+        {/* Top TV Header Bar */}
+        <div className="flex items-center justify-between border-b-2 border-white/20 pb-3">
+          <div className="flex items-center gap-3">
+            <span className="font-jeopardy-title text-sm sm:text-lg md:text-xl text-yellow-300 tracking-widest uppercase">
               {categoryName}
             </span>
-            <div className="flex items-center gap-2 mt-0.5">
-              {isDailyDouble && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-amber-500 text-blue-950 animate-pulse">
-                  <Sparkles className="w-3 h-3" />
-                  Daily Double
-                </span>
-              )}
-              <span className="text-2xl sm:text-3xl font-black text-amber-400 font-serif drop-shadow-md">
-                ${effectiveValue}
+            {isDailyDouble && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black uppercase bg-amber-400 text-blue-950 animate-pulse">
+                <Sparkles className="w-3.5 h-3.5" />
+                Daily Double
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="font-jeopardy-dollar text-2xl sm:text-3xl text-amber-300 font-black">
+              ${effectiveValue}
+            </span>
+
+            {/* Countdown Timer Display */}
+            <div className="flex items-center gap-1.5 bg-black/70 border border-white/30 px-3 py-1.5 rounded-xl">
+              <Clock className={`w-4 h-4 ${timeLeft <= 5 ? 'text-rose-400 animate-spin' : 'text-amber-300'}`} />
+              <span className={`font-digital-led text-xl sm:text-2xl font-bold ${timeLeft <= 5 ? 'text-rose-400' : 'text-amber-300'}`}>
+                {timeLeft}s
               </span>
             </div>
           </div>
-
-          {/* Timer Display */}
-          <div className="flex items-center gap-2 bg-blue-950/80 border border-blue-400/50 px-4 py-2 rounded-xl">
-            <Clock className={`w-5 h-5 ${timeLeft <= 5 ? 'text-rose-400 animate-bounce' : 'text-amber-300'}`} />
-            <span className={`text-xl sm:text-2xl font-mono font-bold ${timeLeft <= 5 ? 'text-rose-400' : 'text-amber-300'}`}>
-              {timeLeft}s
-            </span>
-          </div>
         </div>
 
-        {/* Timer Bar */}
-        <div className="w-full h-2 bg-blue-950 rounded-full mt-3 overflow-hidden border border-blue-400/20">
+        {/* Countdown Timer Bar */}
+        <div className="w-full h-2.5 bg-black/60 rounded-full mt-2 overflow-hidden border border-white/20">
           <div
             className={`h-full transition-all duration-1000 ease-linear ${
               timeLeft <= 5 ? 'bg-rose-500' : 'bg-gradient-to-r from-amber-400 to-yellow-300'
@@ -142,129 +159,125 @@ export const ClueModal: React.FC<ClueModalProps> = ({
           />
         </div>
 
-        {/* Clue Main Content Box */}
-        <div className="my-auto py-6 sm:py-8 text-center px-2">
-          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif font-black tracking-wide leading-relaxed text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] max-w-3xl mx-auto">
+        {/* MAIN CLUE SCREEN (The Classic TV Shot) */}
+        <div className="my-auto py-6 sm:py-10 text-center px-2 sm:px-6">
+          <p className="font-jeopardy-clue text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase leading-relaxed text-white tracking-wide drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] max-w-4xl mx-auto">
             {clue.clue}
           </p>
 
-          {/* Revealed Answer Box */}
+          {/* Revealed Answer Card */}
           {showAnswer && (
-            <div className="mt-6 p-4 rounded-xl bg-amber-400/10 border-2 border-amber-400/80 max-w-xl mx-auto animate-fadeIn">
-              <span className="text-xs uppercase tracking-widest text-amber-300 font-bold block mb-1">
-                Correct Response
+            <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-black/80 border-2 border-amber-400 max-w-2xl mx-auto animate-fadeIn shadow-2xl">
+              <span className="text-xs uppercase font-jeopardy-title text-amber-300 tracking-widest block mb-1">
+                Official Answer
               </span>
-              <p className="text-2xl sm:text-3xl font-serif font-extrabold text-amber-300">
+              <p className="font-jeopardy-clue text-2xl sm:text-3xl md:text-4xl text-yellow-300 uppercase font-black">
                 &ldquo;What is {clue.answer}?&rdquo;
               </p>
               {clue.acceptableAnswers && clue.acceptableAnswers.length > 0 && (
-                <p className="text-xs text-blue-200 mt-1">
-                  Also accepting: {clue.acceptableAnswers.join(', ')}
+                <p className="text-xs text-blue-200 mt-2 font-mono">
+                  Also accepted: {clue.acceptableAnswers.join(' • ')}
                 </p>
               )}
             </div>
           )}
 
-          {/* Feedback message */}
+          {/* Fuzzy Matching Status */}
           {result && !showAnswer && (
-            <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold ${
-              result.isCorrect ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400' : 'bg-rose-500/20 text-rose-300 border border-rose-400'
+            <div className={`mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-xl ${
+              result.isCorrect ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
             }`}>
-              {result.isCorrect ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+              {result.isCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
               <span>{result.feedback} ({Math.round(result.confidence * 100)}% match)</span>
             </div>
           )}
         </div>
 
-        {/* Bottom Section: Active Player + Answer Form + Host Overrides */}
-        <div className="space-y-4 pt-4 border-t-2 border-blue-400/40">
+        {/* INTERACTIVE BUZZER & HOST CONTROLS */}
+        <div className="space-y-3 pt-3 border-t-2 border-white/20 bg-black/50 -mx-4 -mb-4 sm:-mx-8 sm:-mb-8 md:-mx-10 md:-mb-10 p-4 sm:p-6 rounded-b-2xl">
           
-          {/* Active Buzzed-in Player Selector */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-blue-950/60 p-3 rounded-xl border border-blue-400/30">
-            <div className="flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-amber-400" />
-              <span className="text-xs uppercase font-bold text-blue-200">Buzzed In:</span>
+          {/* Buzzer Podium Selection */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs text-amber-300 font-bold uppercase">
+              <UserCheck className="w-4 h-4" />
+              <span>Contestant at Podium:</span>
             </div>
             <div className="flex gap-2">
-              {players.map((p) => (
+              {players.map((p, idx) => (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => setSelectedPlayerId(p.id)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     selectedPlayerId === p.id
-                      ? 'bg-amber-400 text-blue-950 ring-2 ring-amber-300 shadow'
-                      : 'bg-blue-900/80 text-blue-200 hover:bg-blue-800'
+                      ? 'bg-amber-400 text-blue-950 ring-2 ring-white shadow-lg scale-105'
+                      : 'bg-blue-950/80 text-blue-200 hover:bg-blue-900 border border-blue-500/40'
                   }`}
                 >
-                  {p.name}
+                  [{idx + 1}] {p.name} (${p.score})
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Answer Input Form */}
+          {/* Answer Type Input */}
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input
               ref={inputRef}
               type="text"
-              placeholder='Type response (e.g. "What is...")'
+              placeholder='Type response here (e.g. "What is...")'
               value={typedAnswer}
               onChange={(e) => setTypedAnswer(e.target.value)}
-              className="flex-1 bg-blue-950/90 border-2 border-blue-400/60 focus:border-amber-400 rounded-xl px-4 py-2.5 text-base sm:text-lg font-medium text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-amber-400/40 shadow-inner"
+              className="flex-1 bg-black/80 border-2 border-blue-400 focus:border-amber-400 rounded-xl px-4 py-2.5 text-base sm:text-lg text-white placeholder-blue-300/40 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-inner"
             />
             <button
               type="submit"
               disabled={!typedAnswer.trim()}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-blue-950 font-bold rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 text-blue-950 font-black rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 cursor-pointer uppercase text-sm tracking-wider"
             >
               <span>Submit</span>
               <Send className="w-4 h-4" />
             </button>
           </form>
 
-          {/* Host Override & Controls Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          {/* Host Overrides & Finished Button */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
             <div className="flex items-center gap-2">
-              {/* Host Correct Button */}
               <button
                 type="button"
                 onClick={handleCorrectOverride}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs sm:text-sm font-bold border border-emerald-400/50 shadow transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
                 <span>Award (+${effectiveValue})</span>
               </button>
 
-              {/* Host Incorrect Button */}
               <button
                 type="button"
                 onClick={handleIncorrectOverride}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white text-xs sm:text-sm font-bold border border-rose-400/50 shadow transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
                 <span>Deduct (-${effectiveValue})</span>
               </button>
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Toggle Reveal Answer Button */}
               <button
                 type="button"
                 onClick={() => setShowAnswer(!showAnswer)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-900/80 hover:bg-blue-800 text-blue-200 text-xs sm:text-sm font-bold border border-blue-400/40 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-900 hover:bg-blue-800 text-amber-200 text-xs font-bold transition-colors cursor-pointer"
               >
-                {showAnswer ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-amber-300" />}
+                {showAnswer ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 <span>{showAnswer ? 'Hide' : 'Reveal'} Answer</span>
               </button>
 
-              {/* Pass / Close Clue Button */}
               <button
                 type="button"
                 onClick={onPassClue}
-                className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-blue-950 font-black text-xs sm:text-sm shadow-md transition-transform hover:scale-105 active:scale-95"
+                className="px-5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 text-blue-950 font-black text-xs uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer shadow-md"
               >
-                Done / Next
+                Return to Board
               </button>
             </div>
           </div>
