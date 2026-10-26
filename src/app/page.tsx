@@ -1,69 +1,146 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState } from 'react';
+import { useJeopardyGame } from '../hooks/useJeopardyGame';
+import { Header } from '../components/Header';
+import { GameBoard } from '../components/GameBoard';
+import { Scoreboard } from '../components/Scoreboard';
+import { ClueModal } from '../components/ClueModal';
+import { DailyDoubleModal } from '../components/DailyDoubleModal';
+import { FinalJeopardyModal } from '../components/FinalJeopardyModal';
+import { WinnerPodium } from '../components/WinnerPodium';
+import { RulesModal } from '../components/RulesModal';
+
+export default function JeopardyApp() {
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
+
+  const {
+    packIndex,
+    currentPack,
+    round,
+    players,
+    activePlayerIndex,
+    currentCategories,
+    activeClueData,
+    isDailyDoubleActive,
+    dailyDoubleWager,
+    isWagerConfirmed,
+    soundEnabled,
+    isRoundComplete,
+    setActivePlayerIndex,
+    selectGamePack,
+    restartGame,
+    selectClue,
+    closeClueModal,
+    submitAnswer,
+    hostOverride,
+    passClue,
+    adjustPlayerScore,
+    updatePlayerName,
+    setPlayerCount,
+    setDailyDoubleWager,
+    setIsWagerConfirmed,
+    goToNextRound,
+    updateFinalWager,
+    updateFinalAnswer,
+    scoreFinalJeopardy,
+    toggleSound
+  } = useJeopardyGame();
+
+  const handleDailyDoubleWagerConfirmed = (wager: number, playerId: string) => {
+    setDailyDoubleWager(wager);
+    setIsWagerConfirmed(true);
+    const pIdx = players.findIndex(p => p.id === playerId);
+    if (pIdx !== -1) setActivePlayerIndex(pIdx);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <main className="min-h-screen flex flex-col justify-between bg-[#020524] text-white selection:bg-amber-400 selection:text-blue-950 font-sans">
+      {/* Header Bar */}
+      <Header
+        round={round}
+        packIndex={packIndex}
+        soundEnabled={soundEnabled}
+        onSelectPack={selectGamePack}
+        onToggleSound={toggleSound}
+        onRestart={restartGame}
+        onOpenRules={() => setIsRulesOpen(true)}
+        onNextRound={goToNextRound}
+        isRoundComplete={isRoundComplete}
+      />
+
+      {/* Main Game Screen */}
+      <div className="flex-1 flex flex-col justify-center items-center py-4 w-full">
+        {round === 'game-over' ? (
+          <WinnerPodium players={players} onRestart={restartGame} />
+        ) : (
+          <div className="w-full space-y-4">
+            <GameBoard
+              categories={currentCategories}
+              onSelectClue={selectClue}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+            <Scoreboard
+              players={players}
+              activePlayerIndex={activePlayerIndex}
+              onSelectActivePlayer={setActivePlayerIndex}
+              onAdjustScore={adjustPlayerScore}
+              onUpdatePlayerName={updatePlayerName}
+              onSetPlayerCount={setPlayerCount}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="w-full text-center py-2.5 text-xs text-blue-400/60 border-t border-blue-900/40">
+        Classic Jeopardy! Game Show App • Built with Next.js & Tailwind CSS
+      </footer>
+
+      {/* Daily Double Wager Modal */}
+      {activeClueData && isDailyDoubleActive && !isWagerConfirmed && (
+        <DailyDoubleModal
+          players={players}
+          activePlayerIndex={activePlayerIndex}
+          round={round}
+          onConfirmWager={handleDailyDoubleWagerConfirmed}
+          onCancel={closeClueModal}
+        />
+      )}
+
+      {/* Clue Modal */}
+      {activeClueData && (!isDailyDoubleActive || isWagerConfirmed) && (
+        <ClueModal
+          categoryName={activeClueData.categoryName}
+          clue={activeClueData.clue}
+          players={players}
+          activePlayerIndex={activePlayerIndex}
+          isDailyDouble={isDailyDoubleActive}
+          dailyDoubleWager={dailyDoubleWager}
+          onSubmitAnswer={submitAnswer}
+          onHostOverride={hostOverride}
+          onPassClue={passClue}
+          onClose={closeClueModal}
+        />
+      )}
+
+      {/* Final Jeopardy Modal */}
+      {round === 'final-jeopardy' && (
+        <FinalJeopardyModal
+          finalData={currentPack.finalJeopardy}
+          players={players}
+          onUpdateWager={updateFinalWager}
+          onUpdateAnswer={updateFinalAnswer}
+          onScoreFinal={scoreFinalJeopardy}
+          onFinishGame={goToNextRound}
+        />
+      )}
+
+      {/* Rules & Help Modal */}
+      <RulesModal
+        isOpen={isRulesOpen}
+        onClose={() => setIsRulesOpen(false)}
+      />
+    </main>
   );
 }
