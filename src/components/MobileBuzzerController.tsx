@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PeerConnectionState } from '../types/multiplayer';
-import { Player, RoundType } from '../types/game';
-import { Zap, Send, Trophy, Wifi, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Player, RoundType, Category, Clue } from '../types/game';
+import { Wifi, ArrowLeft, Clock, Check, X, Zap, Eye, Send, Sparkles } from 'lucide-react';
 import { soundFx } from '../lib/sound';
 
 interface MobileBuzzerControllerProps {
@@ -11,16 +11,24 @@ interface MobileBuzzerControllerProps {
   remoteState: {
     round: RoundType;
     clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+    categories: Category[];
+    activeClue?: Clue;
+    activeCategoryName?: string;
+    activeCategoryIdx?: number;
+    activeClueIdx?: number;
     activeClueValue?: number;
     categoryName?: string;
     clueText?: string;
+    clueAnswer?: string;
     buzzedPlayerId?: string;
     buzzedPlayerName?: string;
     players: Player[];
     isDailyDouble?: boolean;
+    dailyDoubleWager?: number;
   };
   onSendBuzz: () => void;
   onSendAnswer: (answer: string) => void;
+  onSelectClue: (categoryIdx: number, clueIdx: number) => void;
   onLeave: () => void;
 }
 
@@ -29,16 +37,40 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
   remoteState,
   onSendBuzz,
   onSendAnswer,
+  onSelectClue,
   onLeave
 }) => {
   const [typedAnswer, setTypedAnswer] = useState('');
-  const myPlayer = remoteState.players.find(p => p.id === connectionState.myPlayerId);
-  const isMyTurn = remoteState.buzzedPlayerId === connectionState.myPlayerId;
-  const isSomeoneElseTurn = remoteState.buzzedPlayerId && !isMyTurn;
+  const [hasBuzzed, setHasBuzzed] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleBuzzClick = () => {
-    if (remoteState.clueState === 'reading' && !remoteState.buzzedPlayerId) {
+  const myPlayer = remoteState.players.find(p => p.id === connectionState.myPlayerId);
+  const isMyBuzz = remoteState.buzzedPlayerId === connectionState.myPlayerId;
+  const clueOpen = remoteState.clueState !== 'none';
+  const effectiveValue = remoteState.isDailyDouble
+    ? (remoteState.dailyDoubleWager ?? remoteState.activeClueValue ?? 0)
+    : (remoteState.activeClueValue ?? 0);
+
+  // Reset buzz state when clue closes
+  useEffect(() => {
+    if (remoteState.clueState === 'none') {
+      setHasBuzzed(false);
+      setTypedAnswer('');
+    }
+  }, [remoteState.clueState]);
+
+  // Focus input when I buzz in
+  useEffect(() => {
+    if (isMyBuzz) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [isMyBuzz]);
+
+  const handleBuzz = () => {
+    if (remoteState.clueState === 'reading' && !remoteState.buzzedPlayerId && !hasBuzzed) {
+      setHasBuzzed(true);
       onSendBuzz();
+      soundFx.playBuzzerPress();
     }
   };
 
@@ -49,155 +81,222 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
     setTypedAnswer('');
   };
 
+  const handleTileClick = (categoryIdx: number, clueIdx: number, clue: Clue) => {
+    if (clue.isAnswered || clueOpen) return;
+    onSelectClue(categoryIdx, clueIdx);
+  };
+
+  // ─── CLUE OVERLAY ───────────────────────────────────────────────
+  const ClueOverlay = () => {
+    if (!clueOpen) return null;
+    const answered = remoteState.clueState === 'revealed';
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/95 backdrop-blur-md animate-fadeIn">
+        <div className="relative w-full max-w-lg bg-[#060ce9] border-4 border-black rounded-2xl shadow-[0_0_60px_rgba(6,12,233,0.9)] p-4 text-white flex flex-col gap-3 overflow-hidden">
+
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/20 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="font-jeopardy-title text-sm text-yellow-300 tracking-widest uppercase">
+                {remoteState.activeCategoryName || remoteState.categoryName}
+              </span>
+              {remoteState.isDailyDouble && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black uppercase bg-amber-400 text-blue-950 animate-pulse">
+                  <Sparkles className="w-3 h-3" />
+                  Daily Double
+                </span>
+              )}
+            </div>
+            <span className="font-jeopardy-dollar text-xl text-amber-300 font-black">
+              ${effectiveValue}
+            </span>
+          </div>
+
+          {/* Clue Text */}
+          <div className="py-4 text-center px-2">
+            <p className="font-jeopardy-clue text-lg sm:text-xl uppercase leading-relaxed text-white tracking-wide">
+              {remoteState.clueText}
+            </p>
+          </div>
+
+          {/* Buzz status */}
+          {!answered && (
+            <div className="text-center">
+              {remoteState.buzzedPlayerId ? (
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm ${
+                  isMyBuzz
+                    ? 'bg-amber-400/20 border-2 border-amber-400 text-amber-300'
+                    : 'bg-blue-900/60 border border-blue-600 text-blue-200'
+                }`}>
+                  <Zap className="w-4 h-4" />
+                  {isMyBuzz ? 'You buzzed in!' : `${remoteState.buzzedPlayerName} buzzed in!`}
+                </div>
+              ) : (
+                <button
+                  onClick={handleBuzz}
+                  disabled={hasBuzzed}
+                  className="w-full py-4 bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 hover:brightness-110 border-4 border-amber-400 rounded-2xl font-jeopardy-title text-xl font-black text-white uppercase tracking-wider shadow-[0_0_30px_rgba(244,63,94,0.7)] transition-all active:scale-95 disabled:opacity-50 cursor-pointer animate-pulseGlow flex items-center justify-center gap-3"
+                >
+                  <Zap className="w-6 h-6 fill-white" />
+                  BUZZ IN!
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Answer input (only when I'm buzzed in) */}
+          {isMyBuzz && !answered && (
+            <form onSubmit={handleAnswerSubmit} className="flex gap-2 animate-fadeIn">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Type your answer..."
+                value={typedAnswer}
+                onChange={(e) => setTypedAnswer(e.target.value)}
+                className="flex-1 bg-black/90 border-2 border-amber-400 rounded-xl px-3 py-2.5 text-base text-white placeholder-blue-300/40 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
+              />
+              <button
+                type="submit"
+                disabled={!typedAnswer.trim()}
+                className="flex items-center gap-1 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black rounded-xl text-sm uppercase tracking-wider transition-all disabled:opacity-40 cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          )}
+
+          {/* Revealed answer */}
+          {answered && remoteState.clueAnswer && (
+            <div className="text-center bg-black/80 border border-amber-400 rounded-xl p-3">
+              <span className="text-xs uppercase font-bold text-amber-300 tracking-widest block mb-1">
+                Correct Answer
+              </span>
+              <p className="font-jeopardy-clue text-xl text-yellow-300 uppercase font-black">
+                {remoteState.clueAnswer}
+              </p>
+            </div>
+          )}
+
+          {/* Waiting message when revealed */}
+          {answered && (
+            <p className="text-center text-xs text-blue-300">
+              Waiting for host to return to board...
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ─── MAIN BOARD VIEW ────────────────────────────────────────────
+  const categories = remoteState.categories;
+  const values = categories.length > 0
+    ? categories[0].clues.map(c => c.value)
+    : [];
+
   return (
-    <div className="min-h-screen bg-[#020524] text-white flex flex-col justify-between p-4 max-w-md mx-auto select-none font-sans">
-      
-      {/* Top Header Row */}
-      <div className="flex items-center justify-between border-b border-blue-900/60 pb-3">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#020524] text-white select-none font-sans">
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-blue-900/60 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-          <span className="font-mono text-xs font-bold text-amber-300 uppercase">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <span className="font-jeopardy-title text-sm font-black text-amber-300 uppercase tracking-wider">
+            JEOPARDY!
+          </span>
+          <span className="text-xs text-blue-400 font-mono">
             Room: {connectionState.roomCode}
           </span>
         </div>
-
         <button
           onClick={onLeave}
-          className="text-xs text-blue-300 hover:text-white px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-800"
+          className="text-xs text-blue-300 hover:text-white px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-800 cursor-pointer"
         >
           Leave
         </button>
       </div>
 
-      {/* Player Score & Name Podium */}
-      <div className="bg-gradient-to-b from-[#0e2a94] to-[#040c35] border-2 border-amber-400/80 rounded-2xl p-4 text-center shadow-lg my-2">
-        <span className="text-xs uppercase font-bold text-blue-200 tracking-wider block">
-          {myPlayer?.name || 'Contestant'}
-        </span>
-        <span className="font-digital-led text-4xl font-black text-amber-300 drop-shadow-[0_0_12px_rgba(252,192,20,0.8)] block mt-1">
-          ${myPlayer?.score ?? 0}
-        </span>
-      </div>
-
-      {/* Main Game Status / Buzzer Area */}
-      <div className="flex-1 flex flex-col items-center justify-center my-4 text-center">
-
-        {/* State 1: No Active Clue */}
-        {remoteState.clueState === 'none' && (
-          <div className="space-y-3 py-8">
-            <div className="w-16 h-16 mx-auto rounded-full bg-blue-900/40 border border-blue-600/40 flex items-center justify-center">
-              <Trophy className="w-8 h-8 text-amber-400" />
-            </div>
-            <h3 className="font-jeopardy-title text-xl text-white font-bold">
-              Watching TV Board
-            </h3>
-            <p className="text-xs text-blue-300 max-w-xs mx-auto">
-              The host is selecting a category. Keep your thumb ready on the buzzer!
-            </p>
+      {/* Board */}
+      <div className="flex-1 overflow-auto p-1.5">
+        {categories.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-blue-400 text-sm">
+            Waiting for host to start the game...
           </div>
-        )}
-
-        {/* State 2: Clue Open & Waiting for Buzz */}
-        {remoteState.clueState === 'reading' && !remoteState.buzzedPlayerId && (
-          <div className="w-full space-y-4">
-            {/* Category & Value */}
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[11px] uppercase font-bold text-amber-400 tracking-widest">
-                {remoteState.categoryName}
-              </span>
-              <span className="text-lg font-black text-amber-300 font-jeopardy-dollar">
-                ${remoteState.activeClueValue}
-              </span>
-            </div>
-
-            {/* Clue Text */}
-            {remoteState.clueText && (
-              <div className="bg-[#060ce9] border-2 border-white/20 rounded-2xl px-4 py-5 text-center shadow-inner">
-                <p className="font-jeopardy-clue text-base sm:text-lg uppercase leading-relaxed text-white tracking-wide">
-                  {remoteState.clueText}
-                </p>
-              </div>
-            )}
-
-            {/* BUZZER BUTTON */}
-            <button
-              onClick={handleBuzzClick}
-              className="w-44 h-44 sm:w-52 sm:h-52 mx-auto rounded-full bg-gradient-to-b from-rose-500 via-red-600 to-rose-900 active:from-rose-600 active:to-red-950 border-8 border-amber-400 shadow-[0_0_60px_rgba(244,63,94,0.8)] flex flex-col items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer animate-pulseGlow"
-            >
-              <Zap className="w-12 h-12 text-white fill-white animate-bounce" />
-              <span className="font-jeopardy-title text-xl font-black text-white uppercase tracking-wider drop-shadow-md">
-                BUZZ IN!
-              </span>
-            </button>
-          </div>
-        )}
-
-        {/* State 3: THIS Player Buzzed In! */}
-        {isMyTurn && (
-          <div className="w-full space-y-4 animate-fadeIn">
-            <div className="p-3 rounded-2xl bg-amber-400/20 border-2 border-amber-400">
-              <span className="font-black text-lg text-amber-300 uppercase tracking-widest block">
-                ⚡ YOU BUZZED IN!
-              </span>
-              <span className="text-xs text-blue-100">
-                Type your answer below or speak it to the host:
-              </span>
-            </div>
-
-            <form onSubmit={handleAnswerSubmit} className="space-y-3">
-              <input
-                type="text"
-                autoFocus
-                placeholder='Type answer (e.g. "Chile")...'
-                value={typedAnswer}
-                onChange={(e) => setTypedAnswer(e.target.value)}
-                className="w-full bg-black/90 border-2 border-amber-400 rounded-xl px-4 py-3 text-lg text-white font-bold text-center focus:outline-none focus:ring-4 focus:ring-amber-400/50"
-              />
-              <button
-                type="submit"
-                disabled={!typedAnswer.trim()}
-                className="w-full py-3.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-blue-950 font-black rounded-xl text-base uppercase tracking-wider shadow-lg transition-transform active:scale-95 disabled:opacity-40"
+        ) : (
+          <div
+            className="grid gap-1 h-full"
+            style={{ gridTemplateColumns: `repeat(${categories.length}, 1fr)` }}
+          >
+            {/* Category headers */}
+            {categories.map((cat) => (
+              <div
+                key={cat.id}
+                className="bg-[#060ce9] border border-blue-700 rounded-md flex items-center justify-center p-1 text-center min-h-[2.5rem]"
               >
-                Submit Response
-              </button>
-            </form>
+                <span className="font-jeopardy-title text-[9px] sm:text-[10px] font-black text-white uppercase tracking-wider leading-tight">
+                  {cat.name}
+                </span>
+              </div>
+            ))}
+
+            {/* Clue tiles row by row */}
+            {values.map((_, rowIdx) =>
+              categories.map((cat) => {
+                const clue = cat.clues[rowIdx];
+                if (!clue) return <div key={`${cat.id}-${rowIdx}`} />;
+                const answered = clue.isAnswered;
+                return (
+                  <button
+                    key={clue.id}
+                    onClick={() => handleTileClick(categories.indexOf(cat), rowIdx, clue)}
+                    disabled={answered || clueOpen}
+                    className={`rounded-md border flex items-center justify-center font-jeopardy-dollar font-black transition-all min-h-[2.2rem] text-xs sm:text-sm cursor-pointer ${
+                      answered
+                        ? 'bg-[#010420] border-blue-950/40 text-transparent'
+                        : clueOpen
+                        ? 'bg-[#060ce9] border-blue-700 text-amber-300 opacity-50 cursor-not-allowed'
+                        : 'bg-[#060ce9] border-blue-700 text-amber-300 hover:bg-[#0a14ff] hover:border-amber-400 active:scale-95'
+                    }`}
+                  >
+                    {answered ? '' : `$${clue.value}`}
+                  </button>
+                );
+              })
+            )}
           </div>
         )}
-
-        {/* State 4: Someone Else Buzzed In */}
-        {isSomeoneElseTurn && (
-          <div className="space-y-3 py-6 animate-fadeIn">
-            <div className="w-16 h-16 mx-auto rounded-full bg-blue-950 border-2 border-blue-700 flex items-center justify-center">
-              <Zap className="w-8 h-8 text-blue-400" />
-            </div>
-            <h3 className="font-bold text-lg text-amber-300">
-              {remoteState.buzzedPlayerName || 'Opponent'} Buzzed In!
-            </h3>
-            <p className="text-xs text-blue-300">
-              Waiting for their response on the host screen...
-            </p>
-          </div>
-        )}
-
-        {/* State 5: Revealed Answer */}
-        {remoteState.clueState === 'revealed' && (
-          <div className="space-y-2 py-6 animate-fadeIn">
-            <span className="text-xs uppercase font-bold text-amber-300 tracking-wider">
-              Round Complete
-            </span>
-            <p className="text-sm text-blue-200">
-              Board updating... get ready for the next clue!
-            </p>
-          </div>
-        )}
-
       </div>
 
-      {/* Footer Info */}
-      <footer className="text-center text-[10px] text-blue-400/50 pt-2 border-t border-blue-950">
-        Jeopardy! Mobile Controller • Connected via WebRTC
-      </footer>
+      {/* Scoreboard strip */}
+      <div className="shrink-0 border-t border-blue-900/60 px-2 py-1.5">
+        <div className="flex gap-2 justify-center overflow-x-auto">
+          {remoteState.players.map((p) => {
+            const isMe = p.id === connectionState.myPlayerId;
+            const isNeg = p.score < 0;
+            return (
+              <div
+                key={p.id}
+                className={`flex flex-col items-center px-3 py-1 rounded-lg border min-w-[80px] ${
+                  isMe
+                    ? 'bg-gradient-to-b from-[#0b1682] to-[#01041b] border-amber-400 shadow-[0_0_12px_rgba(252,192,20,0.4)]'
+                    : 'bg-[#040828] border-blue-900'
+                }`}
+              >
+                <span className="text-[9px] font-bold text-blue-200 truncate max-w-[72px]">
+                  {p.name}{isMe ? ' (You)' : ''}
+                </span>
+                <span className={`font-digital-led text-base font-black ${isNeg ? 'text-rose-400' : 'text-amber-300'}`}>
+                  {isNeg ? `-$${Math.abs(p.score)}` : `$${p.score}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
+      {/* Clue overlay (portal-style fixed overlay) */}
+      <ClueOverlay />
     </div>
   );
 };

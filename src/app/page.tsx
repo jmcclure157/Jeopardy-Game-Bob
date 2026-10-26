@@ -86,6 +86,11 @@ export default function JeopardyApp() {
     addPlayer(player);
   }, [addPlayer]);
 
+  // Handle remote player requesting to open a clue
+  const handleHostReceiveSelectClue = useCallback((categoryIdx: number, clueIdx: number) => {
+    selectClue(categoryIdx, clueIdx);
+  }, [selectClue]);
+
   // WebRTC Multiplayer Hook
   const {
     connectionState,
@@ -95,11 +100,13 @@ export default function JeopardyApp() {
     broadcastState,
     sendBuzzIn,
     sendAnswer,
+    sendSelectClue,
     leaveRoom
   } = useMultiplayer(
     handleHostReceiveBuzz,
     handleHostReceiveAnswer,
-    handleHostPlayerJoined
+    handleHostPlayerJoined,
+    handleHostReceiveSelectClue
   );
 
   // Check URL parameters on mount (?role=player&room=CODE)
@@ -115,16 +122,12 @@ export default function JeopardyApp() {
     }
   }, []);
 
-  // Broadcast game state to connected phones whenever state changes
+  // Broadcast game state to connected remote players whenever state changes
   useEffect(() => {
     if (connectionState.isHost && connectionState.status === 'connected') {
       let clueState: 'none' | 'reading' | 'buzzed' | 'revealed' = 'none';
       if (activeClueData) {
-        if (buzzedPlayerId) {
-          clueState = 'buzzed';
-        } else {
-          clueState = 'reading';
-        }
+        clueState = buzzedPlayerId ? 'buzzed' : 'reading';
       }
 
       const buzzedPlayer = players.find(p => p.id === buzzedPlayerId);
@@ -132,23 +135,32 @@ export default function JeopardyApp() {
       broadcastState({
         round,
         clueState,
+        categories: currentCategories,
+        activeClue: activeClueData?.clue,
+        activeCategoryName: activeClueData?.categoryName,
+        activeCategoryIdx: activeClueData?.categoryIdx,
+        activeClueIdx: activeClueData?.clueIdx,
         activeClueValue: activeClueData?.clue.value,
         categoryName: activeClueData?.categoryName,
         clueText: activeClueData?.clue.clue,
+        clueAnswer: activeClueData?.clue.answer,
         buzzedPlayerId: buzzedPlayerId || undefined,
         buzzedPlayerName: buzzedPlayer?.name,
         players,
-        isDailyDouble: isDailyDoubleActive
+        isDailyDouble: isDailyDoubleActive,
+        dailyDoubleWager: dailyDoubleWager
       });
     }
   }, [
     connectionState.isHost,
     connectionState.status,
     round,
+    currentCategories,
     activeClueData,
     buzzedPlayerId,
     players,
     isDailyDoubleActive,
+    dailyDoubleWager,
     broadcastState
   ]);
 
@@ -179,6 +191,7 @@ export default function JeopardyApp() {
           remoteState={remoteState}
           onSendBuzz={sendBuzzIn}
           onSendAnswer={sendAnswer}
+          onSelectClue={sendSelectClue}
           onLeave={() => {
             leaveRoom();
             setIsPlayerMode(false);

@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { DataConnection } from 'peerjs';
-import { Player, RoundType } from '../types/game';
+import { Player, RoundType, Category, Clue } from '../types/game';
 import { NetworkMessage, PeerConnectionState } from '../types/multiplayer';
 import { soundFx } from '../lib/sound';
 
 export function useMultiplayer(
   onHostReceiveBuzz?: (playerId: string) => void,
   onHostReceiveAnswer?: (playerId: string, answer: string) => void,
-  onHostPlayerJoined?: (player: Player) => void
+  onHostPlayerJoined?: (player: Player) => void,
+  onHostReceiveSelectClue?: (categoryIdx: number, clueIdx: number) => void
 ) {
   const [connectionState, setConnectionState] = useState<PeerConnectionState>({
     isHost: false,
@@ -26,20 +27,28 @@ export function useMultiplayer(
   const playerConnectionRef = useRef<DataConnection | null>(null);
   const peerRef = useRef<any>(null);
 
-  // Latest synced state received on mobile player
+  // Latest synced state received on remote player
   const [remoteState, setRemoteState] = useState<{
     round: RoundType;
     clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+    categories: Category[];
+    activeClue?: Clue;
+    activeCategoryName?: string;
+    activeCategoryIdx?: number;
+    activeClueIdx?: number;
     activeClueValue?: number;
     categoryName?: string;
     clueText?: string;
+    clueAnswer?: string;
     buzzedPlayerId?: string;
     buzzedPlayerName?: string;
     players: Player[];
     isDailyDouble?: boolean;
+    dailyDoubleWager?: number;
   }>({
     round: 'jeopardy',
     clueState: 'none',
+    categories: [],
     players: []
   });
 
@@ -111,6 +120,8 @@ export function useMultiplayer(
             onHostReceiveBuzz?.(msg.playerId);
           } else if (msg.type === 'SUBMIT_ANSWER') {
             onHostReceiveAnswer?.(msg.playerId, msg.answer);
+          } else if (msg.type === 'SELECT_CLUE') {
+            onHostReceiveSelectClue?.(msg.categoryIdx, msg.clueIdx);
           }
         });
 
@@ -142,19 +153,26 @@ export function useMultiplayer(
       console.error('Failed to init Host Peer:', err);
       setConnectionState(prev => ({ ...prev, status: 'error', errorMessage: err.message }));
     }
-  }, [cleanup, onHostPlayerJoined, onHostReceiveBuzz, onHostReceiveAnswer]);
+  }, [cleanup, onHostPlayerJoined, onHostReceiveBuzz, onHostReceiveAnswer, onHostReceiveSelectClue]);
 
-  // HOST: Broadcast state to all connected mobile players
+  // HOST: Broadcast state to all connected remote players
   const broadcastState = useCallback((state: {
     round: RoundType;
     clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+    categories: Category[];
+    activeClue?: Clue;
+    activeCategoryName?: string;
+    activeCategoryIdx?: number;
+    activeClueIdx?: number;
     activeClueValue?: number;
     categoryName?: string;
     clueText?: string;
+    clueAnswer?: string;
     buzzedPlayerId?: string;
     buzzedPlayerName?: string;
     players: Player[];
     isDailyDouble?: boolean;
+    dailyDoubleWager?: number;
   }) => {
     const msg: NetworkMessage = {
       type: 'STATE_SYNC',
@@ -205,13 +223,20 @@ export function useMultiplayer(
             setRemoteState({
               round: msg.round,
               clueState: msg.clueState,
+              categories: msg.categories ?? [],
+              activeClue: msg.activeClue,
+              activeCategoryName: msg.activeCategoryName,
+              activeCategoryIdx: msg.activeCategoryIdx,
+              activeClueIdx: msg.activeClueIdx,
               activeClueValue: msg.activeClueValue,
               categoryName: msg.categoryName,
               clueText: msg.clueText,
+              clueAnswer: msg.clueAnswer,
               buzzedPlayerId: msg.buzzedPlayerId,
               buzzedPlayerName: msg.buzzedPlayerName,
               players: msg.players,
-              isDailyDouble: msg.isDailyDouble
+              isDailyDouble: msg.isDailyDouble,
+              dailyDoubleWager: msg.dailyDoubleWager
             });
 
             // Vibrate phone when buzzed in
@@ -271,6 +296,17 @@ export function useMultiplayer(
     }
   }, [connectionState.myPlayerId]);
 
+  // PLAYER: Request host to open a clue
+  const sendSelectClue = useCallback((categoryIdx: number, clueIdx: number) => {
+    if (playerConnectionRef.current) {
+      playerConnectionRef.current.send({
+        type: 'SELECT_CLUE',
+        categoryIdx,
+        clueIdx
+      } as NetworkMessage);
+    }
+  }, []);
+
   return {
     connectionState,
     remoteState,
@@ -279,6 +315,7 @@ export function useMultiplayer(
     broadcastState,
     sendBuzzIn,
     sendAnswer,
+    sendSelectClue,
     leaveRoom: cleanup
   };
 }
