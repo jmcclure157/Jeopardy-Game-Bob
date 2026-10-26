@@ -100,22 +100,32 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
         {/* State 2: Clue Open & Waiting for Buzz */}
         {remoteState.clueState === 'reading' && !remoteState.buzzedPlayerId && (
           <div className="w-full space-y-4">
-            <div>
-              <span className="text-[11px] uppercase font-bold text-amber-400 tracking-widest block">
+            {/* Category & Value */}
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] uppercase font-bold text-amber-400 tracking-widest">
                 {remoteState.categoryName}
               </span>
-              <span className="text-2xl font-black text-white font-jeopardy-dollar">
+              <span className="text-lg font-black text-amber-300 font-jeopardy-dollar">
                 ${remoteState.activeClueValue}
               </span>
             </div>
 
-            {/* GIANT BUZZER BUTTON */}
+            {/* Clue Text */}
+            {remoteState.clueText && (
+              <div className="bg-[#060ce9] border-2 border-white/20 rounded-2xl px-4 py-5 text-center shadow-inner">
+                <p className="font-jeopardy-clue text-base sm:text-lg uppercase leading-relaxed text-white tracking-wide">
+                  {remoteState.clueText}
+                </p>
+              </div>
+            )}
+
+            {/* BUZZER BUTTON */}
             <button
               onClick={handleBuzzClick}
-              className="w-56 h-56 sm:w-64 sm:h-64 mx-auto rounded-full bg-gradient-to-b from-rose-500 via-red-600 to-rose-900 active:from-rose-600 active:to-red-950 border-8 border-amber-400 shadow-[0_0_60px_rgba(244,63,94,0.8)] flex flex-col items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer animate-pulseGlow"
+              className="w-44 h-44 sm:w-52 sm:h-52 mx-auto rounded-full bg-gradient-to-b from-rose-500 via-red-600 to-rose-900 active:from-rose-600 active:to-red-950 border-8 border-amber-400 shadow-[0_0_60px_rgba(244,63,94,0.8)] flex flex-col items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer animate-pulseGlow"
             >
-              <Zap className="w-14 h-14 text-white fill-white animate-bounce" />
-              <span className="font-jeopardy-title text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">
+              <Zap className="w-12 h-12 text-white fill-white animate-bounce" />
+              <span className="font-jeopardy-title text-xl font-black text-white uppercase tracking-wider drop-shadow-md">
                 BUZZ IN!
               </span>
             </button>

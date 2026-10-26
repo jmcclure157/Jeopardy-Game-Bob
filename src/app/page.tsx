@@ -55,6 +55,7 @@ export default function JeopardyApp() {
     updatePlayerName,
     setPlayerCount,
     addPlayer,
+    removePlayer,
     setDailyDoubleWager,
     setIsWagerConfirmed,
     goToNextRound,
@@ -316,6 +317,7 @@ export default function JeopardyApp() {
               onAdjustScore={adjustPlayerScore}
               onUpdatePlayerName={updatePlayerName}
               onSetPlayerCount={setPlayerCount}
+              onRemovePlayer={removePlayer}
             />
           </div>
         )}

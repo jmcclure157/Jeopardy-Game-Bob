@@ -254,6 +254,13 @@ export function useJeopardyGame() {
     });
   }, []);
 
+  const removePlayer = useCallback((playerId: string) => {
+    setPlayers(prev => {
+      if (prev.length <= 1) return prev; // always keep at least 1
+      return prev.filter(p => p.id !== playerId);
+    });
+  }, []);
+
   const setPlayerCount = useCallback((count: number) => {
     if (count < 1 || count > 6) return;
     setPlayers(DEFAULT_PLAYERS.slice(0, count));
@@ -324,6 +331,7 @@ export function useJeopardyGame() {
     updatePlayerName,
     setPlayerCount,
     addPlayer,
+    removePlayer,
     setDailyDoubleWager,
     setIsWagerConfirmed,
     goToNextRound,

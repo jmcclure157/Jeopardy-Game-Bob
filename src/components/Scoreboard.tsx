@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Player } from '../types/game';
-import { Plus, Minus, Edit2, Check, Users } from 'lucide-react';
+import { Plus, Minus, Edit2, Check, Users, X } from 'lucide-react';
 
 interface ScoreboardProps {
   players: Player[];
@@ -11,6 +11,7 @@ interface ScoreboardProps {
   onAdjustScore: (playerId: string, delta: number) => void;
   onUpdatePlayerName: (playerId: string, newName: string) => void;
   onSetPlayerCount: (count: number) => void;
+  onRemovePlayer: (playerId: string) => void;
 }
 
 export const Scoreboard: React.FC<ScoreboardProps> = ({
@@ -19,7 +20,8 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
   onSelectActivePlayer,
   onAdjustScore,
   onUpdatePlayerName,
-  onSetPlayerCount
+  onSetPlayerCount,
+  onRemovePlayer
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState('');
@@ -100,11 +102,25 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                   )}
                 </div>
 
-                {isActive && (
-                  <span className="px-1.5 py-0.2 rounded bg-amber-400 text-blue-950 font-black text-[8px] uppercase tracking-wider shrink-0">
-                    Active
-                  </span>
-                )}
+                <div className="flex items-center gap-1 shrink-0">
+                  {isActive && (
+                    <span className="px-1.5 py-0.2 rounded bg-amber-400 text-blue-950 font-black text-[8px] uppercase tracking-wider">
+                      Active
+                    </span>
+                  )}
+                  {players.length > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemovePlayer(player.id);
+                      }}
+                      className="p-0.5 rounded text-blue-500 hover:text-rose-400 hover:bg-rose-950/60 transition-colors cursor-pointer"
+                      title="Remove player"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Digital LED Scoreboard Box */}
