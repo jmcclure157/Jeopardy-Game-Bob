@@ -10,18 +10,18 @@ interface GameBoardProps {
 
 export const GameBoard: React.FC<GameBoardProps> = ({ categories, onSelectClue }) => {
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 py-1 select-none">
+    <div className="w-full max-w-4xl mx-auto px-3 select-none">
       {/* 6x6 TV Grid Container with Outer Bevel */}
-      <div className="bg-black p-2 rounded-2xl tv-board-border shadow-[0_12px_45px_rgba(0,0,0,0.9)]">
+      <div className="bg-black/90 p-2 rounded-2xl tv-board-border shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
         
         {/* Category Headers (Top Row) */}
-        <div className="grid grid-cols-6 gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+        <div className="grid grid-cols-6 gap-1.5 mb-1.5">
           {categories.map((category, catIdx) => (
             <div
               key={category.id || catIdx}
-              className="flex items-center justify-center p-1.5 sm:p-2.5 min-h-[56px] sm:min-h-[64px] md:min-h-[70px] tv-category-header rounded-lg text-center"
+              className="flex items-center justify-center p-1.5 min-h-[48px] sm:min-h-[52px] tv-category-header rounded-lg text-center"
             >
-              <h3 className="text-white font-extrabold text-[11px] sm:text-xs md:text-sm font-jeopardy-title uppercase leading-snug line-clamp-3">
+              <h3 className="text-white font-extrabold text-[10px] sm:text-[11px] font-jeopardy-title uppercase leading-tight line-clamp-2 tracking-wide">
                 {category.name}
               </h3>
             </div>
@@ -29,12 +29,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ categories, onSelectClue }
         </div>
 
         {/* Clue Rows (5 Dollar Rows x 6 Category Columns) */}
-        <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-6 gap-1.5">
           {[0, 1, 2, 3, 4].map((clueRowIdx) => (
             <React.Fragment key={`row-${clueRowIdx}`}>
               {categories.map((category, catIdx) => {
                 const clue: Clue | undefined = category.clues[clueRowIdx];
-                if (!clue) return <div key={`empty-${catIdx}-${clueRowIdx}`} className="min-h-[48px] sm:min-h-[58px] md:min-h-[64px]" />;
+                if (!clue) return <div key={`empty-${catIdx}-${clueRowIdx}`} className="min-h-[40px] sm:min-h-[46px]" />;
 
                 const isAnswered = clue.isAnswered;
 
@@ -43,18 +43,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({ categories, onSelectClue }
                     key={clue.id || `${catIdx}-${clueRowIdx}`}
                     disabled={isAnswered}
                     onClick={() => onSelectClue(catIdx, clueRowIdx)}
-                    className={`relative flex items-center justify-center min-h-[48px] sm:min-h-[58px] md:min-h-[64px] rounded-lg transition-all duration-150 transform cursor-pointer ${
+                    className={`relative flex items-center justify-center min-h-[40px] sm:min-h-[46px] rounded-lg transition-all duration-150 transform cursor-pointer ${
                       isAnswered
                         ? 'bg-[#030626] border border-[#0a1140] opacity-20 cursor-default'
                         : 'tv-tile active:scale-95 group'
                     }`}
                   >
                     {!isAnswered ? (
-                      <span className="font-jeopardy-dollar text-xl sm:text-3xl md:text-4xl tv-gold-text group-hover:scale-105 transition-transform duration-150">
+                      <span className="font-jeopardy-dollar text-lg sm:text-2xl tv-gold-text group-hover:scale-105 transition-transform duration-150">
                         ${clue.value}
                       </span>
                     ) : (
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-950/60" />
+                      <div className="w-2 h-2 rounded-full bg-blue-950/60" />
                     )}
                   </button>
                 );

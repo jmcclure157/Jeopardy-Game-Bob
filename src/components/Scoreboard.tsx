@@ -37,9 +37,9 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 sm:px-3 py-0.5">
+    <div className="w-full max-w-4xl mx-auto px-3 py-1">
       {/* Contestant Podiums Row */}
-      <div className="flex flex-row items-stretch justify-center gap-2 sm:gap-3">
+      <div className="flex flex-row items-stretch justify-center gap-3">
         {players.map((player, idx) => {
           const isActive = activePlayerIndex === idx;
           const isNegative = player.score < 0;
@@ -48,19 +48,19 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
             <div
               key={player.id}
               onClick={() => onSelectActivePlayer(idx)}
-              className={`relative flex-1 min-w-[140px] max-w-[260px] rounded-xl p-2 sm:p-2.5 transition-all duration-150 border cursor-pointer ${
+              className={`relative flex-1 min-w-[130px] max-w-[210px] rounded-xl p-2 transition-all duration-150 border cursor-pointer ${
                 isActive
-                  ? 'bg-gradient-to-b from-[#0b1682] via-[#050c53] to-[#01041b] border-amber-400 shadow-[0_0_25px_rgba(252,192,20,0.55)] ring-1 ring-amber-300 scale-101'
-                  : 'bg-gradient-to-b from-[#040828] to-[#010312] border-blue-900/80 hover:border-blue-600/60 shadow-md'
+                  ? 'bg-gradient-to-b from-[#0b1682] via-[#050c53] to-[#01041b] border-amber-400 shadow-[0_0_20px_rgba(252,192,20,0.5)] ring-1 ring-amber-300'
+                  : 'bg-gradient-to-b from-[#040828] to-[#010312] border-blue-900/80 hover:border-blue-600/60 shadow'
               }`}
             >
               {/* Podium Top Bar: Name & Control badge */}
               <div className="flex items-center justify-between gap-1 mb-1">
-                <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex items-center gap-1 min-w-0">
                   <div
-                    className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    className={`w-2 h-2 rounded-full shrink-0 ${
                       isActive
-                        ? 'bg-amber-400 shadow-[0_0_8px_#fcc014] animate-pulse'
+                        ? 'bg-amber-400 shadow-[0_0_6px_#fcc014] animate-pulse'
                         : 'bg-blue-950 border border-blue-800'
                     }`}
                   />
@@ -72,18 +72,18 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                         onChange={(e) => setTempName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && saveEditing(player)}
                         autoFocus
-                        className="w-24 bg-blue-950 border border-amber-400 rounded px-1.5 py-0.5 text-xs font-bold text-white focus:outline-none"
+                        className="w-20 bg-blue-950 border border-amber-400 rounded px-1 text-[11px] font-bold text-white focus:outline-none"
                       />
                       <button
                         onClick={() => saveEditing(player)}
-                        className="p-1 rounded bg-amber-400 text-blue-950 hover:bg-amber-300"
+                        className="p-0.5 rounded bg-amber-400 text-blue-950 hover:bg-amber-300"
                       >
-                        <Check className="w-3 h-3" />
+                        <Check className="w-2.5 h-2.5" />
                       </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1 min-w-0">
-                      <span className="font-jeopardy-title font-bold text-xs sm:text-sm md:text-base text-white tracking-wide truncate">
+                      <span className="font-jeopardy-title font-bold text-xs sm:text-sm text-white tracking-wide truncate">
                         {player.name}
                       </span>
                       <button
@@ -94,26 +94,26 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                         className="text-blue-400 hover:text-amber-300 p-0.5 transition-colors shrink-0"
                         title="Edit name"
                       >
-                        <Edit2 className="w-3 h-3" />
+                        <Edit2 className="w-2.5 h-2.5" />
                       </button>
                     </div>
                   )}
                 </div>
 
                 {isActive && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-blue-950 font-black text-[9px] uppercase tracking-wider shrink-0">
+                  <span className="px-1.5 py-0.2 rounded bg-amber-400 text-blue-950 font-black text-[8px] uppercase tracking-wider shrink-0">
                     Active
                   </span>
                 )}
               </div>
 
               {/* Digital LED Scoreboard Box */}
-              <div className="bg-black rounded-lg border border-blue-950 py-1.5 px-2 text-center shadow-inner relative overflow-hidden">
+              <div className="bg-black rounded-lg border border-blue-950 py-1 px-1.5 text-center shadow-inner relative overflow-hidden">
                 <span
-                  className={`font-digital-led text-2xl sm:text-3xl md:text-4xl font-black tracking-wider ${
+                  className={`font-digital-led text-xl sm:text-2xl font-black tracking-wider ${
                     isNegative
-                      ? 'text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]'
-                      : 'text-amber-300 drop-shadow-[0_0_12px_rgba(252,192,20,0.9)]'
+                      ? 'text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.7)]'
+                      : 'text-amber-300 drop-shadow-[0_0_10px_rgba(252,192,20,0.8)]'
                   }`}
                 >
                   {isNegative ? `-$${Math.abs(player.score)}` : `$${player.score}`}
@@ -122,12 +122,12 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
 
               {/* Quick Score Adjusters */}
               <div
-                className="flex items-center justify-center gap-1 mt-1.5 pt-1 border-t border-white/10 text-xs font-bold"
+                className="flex items-center justify-center gap-1 mt-1 pt-1 border-t border-white/10 text-[10px] font-bold"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={() => onAdjustScore(player.id, -200)}
-                  className="px-2 py-0.5 rounded bg-blue-950 hover:bg-rose-950 text-blue-300 hover:text-rose-200 border border-blue-800 transition-colors cursor-pointer text-[11px]"
+                  className="px-1.5 py-0.5 rounded bg-blue-950 hover:bg-rose-950 text-blue-300 hover:text-rose-200 border border-blue-800 transition-colors cursor-pointer text-[10px]"
                   title="-$200"
                 >
                   -200
@@ -137,18 +137,18 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                   className="p-1 rounded bg-blue-950 hover:bg-rose-950 text-blue-300 hover:text-rose-200 border border-blue-800 transition-colors cursor-pointer"
                   title="-$100"
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-2.5 h-2.5" />
                 </button>
                 <button
                   onClick={() => onAdjustScore(player.id, 100)}
                   className="p-1 rounded bg-blue-950 hover:bg-emerald-950 text-blue-300 hover:text-emerald-200 border border-blue-800 transition-colors cursor-pointer"
                   title="+$100"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-2.5 h-2.5" />
                 </button>
                 <button
                   onClick={() => onAdjustScore(player.id, 200)}
-                  className="px-2 py-0.5 rounded bg-blue-950 hover:bg-emerald-950 text-blue-300 hover:text-emerald-200 border border-blue-800 transition-colors cursor-pointer text-[11px]"
+                  className="px-1.5 py-0.5 rounded bg-blue-950 hover:bg-emerald-950 text-blue-300 hover:text-emerald-200 border border-blue-800 transition-colors cursor-pointer text-[10px]"
                   title="+$200"
                 >
                   +200
