@@ -16,6 +16,30 @@ class SoundManager {
     return this.ctx;
   }
 
+  // Classic electric buzzer chime when player hits Spacebar or buzzer button
+  public playBuzzerPress() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
+
   public playCorrect() {
     if (!this.enabled) return;
     const ctx = this.getContext();
@@ -35,7 +59,7 @@ class SoundManager {
     osc2.frequency.setValueAtTime(880, now);
     osc2.frequency.setValueAtTime(1174.66, now + 0.12); // D6
 
-    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.setValueAtTime(0.25, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
     osc1.connect(gain);
@@ -155,39 +179,38 @@ class SoundManager {
     const ctx = this.getContext();
     if (!ctx) return;
 
-    // Classic 30-second iconic tune notes
     const melody = [
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 329.63, dur: 0.35, pause: 0.05 }, // E4
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 196.00, dur: 0.35, pause: 0.05 }, // G3
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 329.63, dur: 0.35, pause: 0.05 }, // E4
-      { note: 261.63, dur: 0.70, pause: 0.10 }, // C4 (long)
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 329.63, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 196.00, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 329.63, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.70, pause: 0.10 },
 
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 329.63, dur: 0.35, pause: 0.05 }, // E4
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 392.00, dur: 0.35, pause: 0.05 }, // G4
-      { note: 349.23, dur: 0.50, pause: 0.05 }, // F4
-      { note: 329.63, dur: 0.50, pause: 0.05 }, // E4
-      { note: 293.66, dur: 0.50, pause: 0.10 }, // D4
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 329.63, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 392.00, dur: 0.35, pause: 0.05 },
+      { note: 349.23, dur: 0.50, pause: 0.05 },
+      { note: 329.63, dur: 0.50, pause: 0.05 },
+      { note: 293.66, dur: 0.50, pause: 0.10 },
 
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 329.63, dur: 0.35, pause: 0.05 }, // E4
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 196.00, dur: 0.35, pause: 0.05 }, // G3
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 329.63, dur: 0.35, pause: 0.05 }, // E4
-      { note: 261.63, dur: 0.70, pause: 0.10 }, // C4
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 329.63, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 196.00, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 329.63, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.70, pause: 0.10 },
 
-      { note: 329.63, dur: 0.35, pause: 0.05 }, // E4
-      { note: 293.66, dur: 0.35, pause: 0.05 }, // D4
-      { note: 261.63, dur: 0.35, pause: 0.05 }, // C4
-      { note: 246.94, dur: 0.35, pause: 0.05 }, // B3
-      { note: 220.00, dur: 0.50, pause: 0.05 }, // A3
-      { note: 196.00, dur: 0.50, pause: 0.05 }, // G3
-      { note: 261.63, dur: 0.90, pause: 0.10 }  // C4
+      { note: 329.63, dur: 0.35, pause: 0.05 },
+      { note: 293.66, dur: 0.35, pause: 0.05 },
+      { note: 261.63, dur: 0.35, pause: 0.05 },
+      { note: 246.94, dur: 0.35, pause: 0.05 },
+      { note: 220.00, dur: 0.50, pause: 0.05 },
+      { note: 196.00, dur: 0.50, pause: 0.05 },
+      { note: 261.63, dur: 0.90, pause: 0.10 }
     ];
 
     let t = ctx.currentTime;
