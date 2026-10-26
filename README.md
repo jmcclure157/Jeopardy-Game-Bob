@@ -2,9 +2,14 @@
 
 An authentic, retro-styled Jeopardy game show web application built with **Next.js (App Router)**, **TypeScript**, and **Tailwind CSS**.
 
+### 🔗 **Live Game URL**: [https://jmcclure157.github.io/Jeopardy-Game-Bob/](https://jmcclure157.github.io/Jeopardy-Game-Bob/)
+
 ---
 
 ## 🌟 Features
+
+- **📱 Real-Time Phone Buzzer Multiplayer**: Friends can join the game room from their smartphones via WebRTC (using a 4-letter room code) to buzz in with haptic vibration feedback.
+- **🎲 Custom Category Picker & Shuffler**: Shuffle the 6-category board anytime or browse a 24-category library to handpick your favorite topics.
 
 - **Classic TV Look & Feel**: Iconic royal blue & gold styling, retro typography, animated category tiles, and responsive mobile/tablet/desktop grid.
 - **Three Complete Game Rounds**:
