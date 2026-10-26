@@ -7,9 +7,10 @@ function normalizeString(str: string): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // remove diacritics
-    // Strip common Jeopardy question prefixes
-    .replace(/^(what|who|where|when|why|how)\s+(is|are|was|were|the|a|an)\s+/i, '')
-    .replace(/^(it\s+is|they\s+are|the|a|an)\s+/i, '')
+    // Strip common Jeopardy question prefixes & contraction forms
+    .replace(/^(what|who|where|when|why|how)('?s|\s+(is|are|was|were))\s+/i, '')
+    .replace(/^(it'?s|they'?re|it\s+is|they\s+are)\s+/i, '')
+    .replace(/^(the|a|an)\s+/i, '')
     .replace(/['’".,/#!$%^&*;:{}=\-_`~()]/g, ' ') // remove punctuation
     .replace(/\s+/g, ' ')
     .trim();
@@ -64,7 +65,7 @@ export function checkAnswer(
       confidence: 0,
       cleanUserAnswer: '',
       cleanExpectedAnswer: officialAnswer,
-      feedback: 'No answer submitted'
+      feedback: 'No answer entered'
     };
   }
 
@@ -75,21 +76,21 @@ export function checkAnswer(
   for (const target of allTargets) {
     const cleanTarget = normalizeString(target);
     
-    // Direct normalized match
+    // Direct normalized match (e.g. "chile" === "chile")
     if (cleanUser === cleanTarget) {
       return {
         isCorrect: true,
         confidence: 1.0,
         cleanUserAnswer: cleanUser,
         cleanExpectedAnswer: officialAnswer,
-        feedback: 'Exact match!'
+        feedback: 'Correct!'
       };
     }
 
-    // Substring contains check for multi-word answers (e.g. "James I" in "King James I")
+    // Substring contains check (e.g. typing "James I" for "King James I" or "Moby Dick" for "Moby-Dick")
     if (
-      (cleanTarget.length > 5 && cleanUser.includes(cleanTarget)) ||
-      (cleanUser.length > 5 && cleanTarget.includes(cleanUser))
+      (cleanTarget.length >= 4 && cleanUser.includes(cleanTarget)) ||
+      (cleanUser.length >= 4 && cleanTarget.includes(cleanUser))
     ) {
       isMatch = true;
       bestSimilarity = Math.max(bestSimilarity, 0.95);
@@ -100,8 +101,8 @@ export function checkAnswer(
       bestSimilarity = similarity;
     }
 
-    // Threshold: 80% similarity or higher
-    if (similarity >= 0.80) {
+    // 78% similarity threshold to forgive minor typos (e.g. "Mitochondian" -> "Mitochondria")
+    if (similarity >= 0.78) {
       isMatch = true;
     }
   }
