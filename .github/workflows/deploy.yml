@@ -25,15 +25,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit
 
       - name: Build Next.js Static Export
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: /Jeopardy-Game-Bob
+
+      - name: Ensure .nojekyll exists
+        run: touch ./out/.nojekyll
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
