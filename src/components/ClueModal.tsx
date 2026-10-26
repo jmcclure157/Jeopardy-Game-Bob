@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Clue, Player, AnswerCheckResult } from '../types/game';
-import { Check, X, Eye, EyeOff, Clock, UserCheck, Sparkles, Send, ArrowLeft, Zap } from 'lucide-react';
+import { Check, X, Eye, EyeOff, Clock, UserCheck, Sparkles, Send, ArrowLeft, Zap, Wifi } from 'lucide-react';
 import { soundFx } from '../lib/sound';
 
 interface ClueModalProps {
@@ -13,6 +13,7 @@ interface ClueModalProps {
   isDailyDouble: boolean;
   dailyDoubleWager: number;
   externalBuzzedPlayerId?: string | null;
+  isMultiplayer?: boolean;
   onSubmitAnswer: (answer: string, playerId: string, customValue?: number) => AnswerCheckResult | undefined;
   onHostOverride: (playerId: string, isCorrect: boolean, customValue?: number) => void;
   onPassClue: () => void;
@@ -27,6 +28,7 @@ export const ClueModal: React.FC<ClueModalProps> = ({
   isDailyDouble,
   dailyDoubleWager,
   externalBuzzedPlayerId,
+  isMultiplayer = false,
   onSubmitAnswer,
   onHostOverride,
   onPassClue,
@@ -228,19 +230,39 @@ export const ClueModal: React.FC<ClueModalProps> = ({
 
           {/* SPACEBAR BUZZER CTA (Shown when waiting for players to buzz in) */}
           {!isBuzzedIn && !hasCompleted && (
-            <div className="mt-8 animate-bounce">
-              <button
-                type="button"
-                onClick={() => handleBuzzIn(players[activePlayerIndex]?.id || players[0]?.id)}
-                className="inline-flex items-center gap-3 px-8 sm:px-12 py-4 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:brightness-110 text-blue-950 font-black text-lg sm:text-xl uppercase tracking-widest rounded-2xl shadow-[0_0_40px_rgba(252,192,20,0.9)] transition-all hover:scale-105 active:scale-95 cursor-pointer ring-4 ring-white/60 animate-pulseGlow"
-              >
-                <Zap className="w-6 h-6 fill-blue-950" />
-                <span>HIT SPACEBAR TO BUZZ IN</span>
-              </button>
-              <p className="text-xs text-blue-200 mt-2 font-semibold">
-                (Or click the button • Keys 1, 2, 3 for players)
-              </p>
-            </div>
+            isMultiplayer ? (
+              <div className="mt-6 space-y-2 text-center">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-blue-900/60 border border-blue-500/50 text-blue-200 text-sm font-bold">
+                  <Wifi className="w-4 h-4 text-amber-300 animate-pulse" />
+                  <span>Waiting for players to buzz in remotely...</span>
+                </div>
+                <p className="text-xs text-blue-300/70">
+                  (You can also press Spacebar or click below to buzz in locally)
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleBuzzIn(players[activePlayerIndex]?.id || players[0]?.id)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-900/80 hover:bg-blue-800 text-blue-200 font-bold text-sm uppercase tracking-wider rounded-xl border border-blue-600/60 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>Buzz In Locally</span>
+                </button>
+              </div>
+            ) : (
+              <div className="mt-8 animate-bounce">
+                <button
+                  type="button"
+                  onClick={() => handleBuzzIn(players[activePlayerIndex]?.id || players[0]?.id)}
+                  className="inline-flex items-center gap-3 px-8 sm:px-12 py-4 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:brightness-110 text-blue-950 font-black text-lg sm:text-xl uppercase tracking-widest rounded-2xl shadow-[0_0_40px_rgba(252,192,20,0.9)] transition-all hover:scale-105 active:scale-95 cursor-pointer ring-4 ring-white/60 animate-pulseGlow"
+                >
+                  <Zap className="w-6 h-6 fill-blue-950" />
+                  <span>HIT SPACEBAR TO BUZZ IN</span>
+                </button>
+                <p className="text-xs text-blue-200 mt-2 font-semibold">
+                  (Or click the button • Keys 1, 2, 3 for players)
+                </p>
+              </div>
+            )
           )}
 
           {/* REVEALED ANSWER CARD & RETURN BUTTON */}

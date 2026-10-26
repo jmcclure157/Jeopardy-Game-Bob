@@ -21,11 +21,14 @@ export type NetworkMessage =
       players: Player[];
       isDailyDouble?: boolean;
       dailyDoubleWager?: number;
+      clueOpenedAt?: number;
+      activePickerPlayerId?: string;
     }
   | { type: 'BUZZ_IN'; playerId: string; timestamp: number }
   | { type: 'SUBMIT_ANSWER'; playerId: string; answer: string }
   | { type: 'SUBMIT_WAGER'; playerId: string; wager: number }
-  | { type: 'SELECT_CLUE'; categoryIdx: number; clueIdx: number };
+  | { type: 'SELECT_CLUE'; categoryIdx: number; clueIdx: number }
+  | { type: 'ANSWER_RESULT'; playerId: string; isCorrect: boolean; pointValue: number; feedback: string; confidence: number };
 
 export interface PeerConnectionState {
   isHost: boolean;

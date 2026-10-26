@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useJeopardyGame } from '../hooks/useJeopardyGame';
 import { useMultiplayer } from '../hooks/useMultiplayer';
 import { Header } from '../components/Header';
@@ -74,12 +74,26 @@ export default function JeopardyApp() {
     }
   }, [players, setActivePlayerIndex]);
 
+  // Ref to sendAnswerResult (returned by useMultiplayer below, which itself takes handleHostReceiveAnswer)
+  const sendAnswerResultRef = useRef<
+    ((playerId: string, isCorrect: boolean, pointValue: number, feedback: string, confidence: number) => void) | null
+  >(null);
+
   // Handle Host receiving answer from remote player
   const handleHostReceiveAnswer = useCallback((playerId: string, answer: string) => {
     if (activeClueData) {
-      submitAnswer(answer, playerId);
+      const result = submitAnswer(answer, playerId);
+      if (result) {
+        sendAnswerResultRef.current?.(
+          playerId,
+          result.isCorrect,
+          isDailyDoubleActive ? dailyDoubleWager : activeClueData.clue.value,
+          result.feedback ?? '',
+          result.confidence
+        );
+      }
     }
-  }, [activeClueData, submitAnswer]);
+  }, [activeClueData, submitAnswer, isDailyDoubleActive, dailyDoubleWager]);
 
   // Handle Host receiving new player joined over WebRTC
   const handleHostPlayerJoined = useCallback((player: any) => {
@@ -103,6 +117,8 @@ export default function JeopardyApp() {
   const {
     connectionState,
     remoteState,
+    answerResult,
+    sendAnswerResult,
     hostRoom,
     joinRoom,
     broadcastState,
@@ -119,6 +135,10 @@ export default function JeopardyApp() {
     handleHostReceiveWager
   );
 
+  useEffect(() => {
+    sendAnswerResultRef.current = sendAnswerResult;
+  }, [sendAnswerResult]);
+
   // Check URL parameters on mount (?role=player&room=CODE)
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -131,6 +151,16 @@ export default function JeopardyApp() {
       }
     }
   }, []);
+
+  // Track when the active clue was opened (declared before the broadcast effect so it runs first)
+  const clueOpenedAtRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (activeClueData && !clueOpenedAtRef.current) {
+      clueOpenedAtRef.current = Date.now();
+    } else if (!activeClueData) {
+      clueOpenedAtRef.current = null;
+    }
+  }, [activeClueData]);
 
   // Broadcast game state to connected remote players whenever state changes
   useEffect(() => {
@@ -162,7 +192,9 @@ export default function JeopardyApp() {
         buzzedPlayerName: buzzedPlayer?.name,
         players,
         isDailyDouble: isDailyDoubleActive,
-        dailyDoubleWager: dailyDoubleWager
+        dailyDoubleWager: dailyDoubleWager,
+        clueOpenedAt: clueOpenedAtRef.current ?? undefined,
+        activePickerPlayerId: players[activePlayerIndex]?.id
       });
     }
   }, [
@@ -173,6 +205,7 @@ export default function JeopardyApp() {
     activeClueData,
     buzzedPlayerId,
     players,
+    activePlayerIndex,
     isDailyDoubleActive,
     isWagerConfirmed,
     dailyDoubleWager,
@@ -204,6 +237,7 @@ export default function JeopardyApp() {
         <MobileBuzzerController
           connectionState={connectionState}
           remoteState={remoteState}
+          answerResult={answerResult}
           onSendBuzz={sendBuzzIn}
           onSendAnswer={sendAnswer}
           onSelectClue={sendSelectClue}
@@ -334,6 +368,11 @@ export default function JeopardyApp() {
           <WinnerPodium players={players} onRestart={restartGame} />
         ) : (
           <div className="w-full space-y-1 sm:space-y-1.5 flex flex-col items-center justify-center my-auto">
+            {connectionState.isHost && connectionState.connectedCount > 0 && !activeClueData && (
+              <div className="text-xs text-center text-amber-300 font-bold mb-1 tracking-wider uppercase">
+                {players[activePlayerIndex]?.name ?? 'Player'}&apos;s turn to pick
+              </div>
+            )}
             <GameBoard
               categories={currentCategories}
               onSelectClue={selectClue}
@@ -404,6 +443,7 @@ export default function JeopardyApp() {
           isDailyDouble={isDailyDoubleActive}
           dailyDoubleWager={dailyDoubleWager}
           externalBuzzedPlayerId={buzzedPlayerId}
+          isMultiplayer={connectionState.connectedCount > 0}
           onSubmitAnswer={submitAnswer}
           onHostOverride={hostOverride}
           onPassClue={handlePassClue}

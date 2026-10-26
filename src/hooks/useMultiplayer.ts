@@ -46,12 +46,22 @@ export function useMultiplayer(
     players: Player[];
     isDailyDouble?: boolean;
     dailyDoubleWager?: number;
+    clueOpenedAt?: number;
+    activePickerPlayerId?: string;
   }>({
     round: 'jeopardy',
     clueState: 'none',
     categories: [],
     players: []
   });
+
+  // Latest answer verdict received on remote player
+  const [answerResult, setAnswerResult] = useState<{
+    isCorrect: boolean;
+    pointValue: number;
+    feedback: string;
+    confidence: number;
+  } | null>(null);
 
   // Cleanup peer
   const cleanup = useCallback(() => {
@@ -161,7 +171,7 @@ export function useMultiplayer(
   // HOST: Broadcast state to all connected remote players
   const broadcastState = useCallback((state: {
     round: RoundType;
-    clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+    clueState: 'none' | 'wager' | 'reading' | 'buzzed' | 'revealed';
     categories: Category[];
     activeClue?: Clue;
     activeCategoryName?: string;
@@ -176,6 +186,8 @@ export function useMultiplayer(
     players: Player[];
     isDailyDouble?: boolean;
     dailyDoubleWager?: number;
+    clueOpenedAt?: number;
+    activePickerPlayerId?: string;
   }) => {
     const msg: NetworkMessage = {
       type: 'STATE_SYNC',
@@ -186,6 +198,14 @@ export function useMultiplayer(
         conn.send(msg);
       }
     });
+  }, []);
+
+  // HOST: Send an answer verdict to the specific player who answered
+  const sendAnswerResult = useCallback((playerId: string, isCorrect: boolean, pointValue: number, feedback: string, confidence: number) => {
+    const conn = hostConnectionsRef.current.get(playerId);
+    if (conn?.open) {
+      conn.send({ type: 'ANSWER_RESULT', playerId, isCorrect, pointValue, feedback, confidence } as NetworkMessage);
+    }
   }, []);
 
   // PLAYER: Join a Room from mobile phone
@@ -239,8 +259,12 @@ export function useMultiplayer(
               buzzedPlayerName: msg.buzzedPlayerName,
               players: msg.players,
               isDailyDouble: msg.isDailyDouble,
-              dailyDoubleWager: msg.dailyDoubleWager
+              dailyDoubleWager: msg.dailyDoubleWager,
+              clueOpenedAt: msg.clueOpenedAt,
+              activePickerPlayerId: msg.activePickerPlayerId
             });
+
+            if (msg.clueState === 'none') setAnswerResult(null);
 
             // Vibrate phone when buzzed in
             if (msg.clueState === 'buzzed' && msg.buzzedPlayerId) {
@@ -248,6 +272,13 @@ export function useMultiplayer(
                 navigator.vibrate([100, 50, 100]);
               }
             }
+          } else if (msg.type === 'ANSWER_RESULT') {
+            setAnswerResult({
+              isCorrect: msg.isCorrect,
+              pointValue: msg.pointValue,
+              feedback: msg.feedback,
+              confidence: msg.confidence
+            });
           }
         });
 
@@ -324,6 +355,8 @@ export function useMultiplayer(
   return {
     connectionState,
     remoteState,
+    answerResult,
+    sendAnswerResult,
     hostRoom,
     joinRoom,
     broadcastState,

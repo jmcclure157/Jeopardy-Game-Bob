@@ -10,7 +10,7 @@ interface MobileBuzzerControllerProps {
   connectionState: PeerConnectionState;
   remoteState: {
     round: RoundType;
-    clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+    clueState: 'none' | 'wager' | 'reading' | 'buzzed' | 'revealed';
     categories: Category[];
     activeClue?: Clue;
     activeCategoryName?: string;
@@ -25,7 +25,10 @@ interface MobileBuzzerControllerProps {
     players: Player[];
     isDailyDouble?: boolean;
     dailyDoubleWager?: number;
+    clueOpenedAt?: number;
+    activePickerPlayerId?: string;
   };
+  answerResult: { isCorrect: boolean; pointValue: number; feedback: string; confidence: number } | null;
   onSendBuzz: () => void;
   onSendAnswer: (answer: string) => void;
   onSelectClue: (categoryIdx: number, clueIdx: number) => void;
@@ -36,6 +39,7 @@ interface MobileBuzzerControllerProps {
 export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
   connectionState,
   remoteState,
+  answerResult,
   onSendBuzz,
   onSendAnswer,
   onSelectClue,
@@ -54,6 +58,25 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
   const effectiveValue = remoteState.isDailyDouble
     ? (remoteState.dailyDoubleWager ?? remoteState.activeClueValue ?? 0)
     : (remoteState.activeClueValue ?? 0);
+
+  // Derive reading-phase countdown from the host's clue-open timestamp
+  const READING_TOTAL = 12;
+  const [timeLeft, setTimeLeft] = useState<number>(READING_TOTAL);
+  useEffect(() => {
+    if (remoteState.clueState !== 'reading') return;
+    const openedAt = remoteState.clueOpenedAt;
+    const tick = () => {
+      if (!openedAt) {
+        setTimeLeft(READING_TOTAL);
+        return;
+      }
+      const elapsed = (Date.now() - openedAt) / 1000;
+      setTimeLeft(Math.max(0, Math.round(READING_TOTAL - elapsed)));
+    };
+    tick();
+    const interval = setInterval(tick, 500);
+    return () => clearInterval(interval);
+  }, [remoteState.clueState, remoteState.clueOpenedAt]);
 
   // Reset state when clue closes; init wager when DD opens
   useEffect(() => {
@@ -92,8 +115,11 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
     setTypedAnswer('');
   };
 
+  const isNotMyTurn = !!(remoteState.activePickerPlayerId && remoteState.activePickerPlayerId !== connectionState.myPlayerId);
+
   const handleTileClick = (categoryIdx: number, clueIdx: number, clue: Clue) => {
     if (clue.isAnswered || clueOpen) return;
+    if (isNotMyTurn) return;
     onSelectClue(categoryIdx, clueIdx);
   };
 
@@ -190,9 +216,17 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
                 </span>
               )}
             </div>
-            <span className="font-jeopardy-dollar text-xl text-amber-300 font-black">
-              ${effectiveValue}
-            </span>
+            <div className="flex items-center gap-3">
+              {remoteState.clueState === 'reading' && (
+                <span className={`inline-flex items-center gap-1 text-sm font-black ${timeLeft <= 3 ? 'text-red-500' : 'text-amber-300'}`}>
+                  <Clock className="w-4 h-4" />
+                  {timeLeft}s
+                </span>
+              )}
+              <span className="font-jeopardy-dollar text-xl text-amber-300 font-black">
+                ${effectiveValue}
+              </span>
+            </div>
           </div>
 
           {/* Clue Text */}
@@ -248,6 +282,27 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
             </form>
           )}
 
+          {/* Answer verdict (only for the player who answered) */}
+          {isMyBuzz && answerResult && (
+            <div
+              className={`text-center rounded-xl p-3 border-2 animate-fadeIn ${
+                answerResult.isCorrect
+                  ? 'bg-emerald-900/70 border-emerald-400 text-emerald-200'
+                  : 'bg-rose-900/70 border-rose-400 text-rose-200'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2 font-black text-lg uppercase tracking-wider">
+                {answerResult.isCorrect ? <Check className="w-6 h-6" /> : <X className="w-6 h-6" />}
+                <span>
+                  {answerResult.isCorrect ? '+' : '-'}${answerResult.pointValue}
+                </span>
+              </div>
+              {answerResult.feedback && (
+                <p className="text-xs mt-1 opacity-90">{answerResult.feedback}</p>
+              )}
+            </div>
+          )}
+
           {/* Revealed answer */}
           {answered && remoteState.clueAnswer && (
             <div className="text-center bg-black/80 border border-amber-400 rounded-xl p-3">
@@ -277,46 +332,67 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
     ? categories[0].clues.map(c => c.value)
     : [];
 
+  const roundLabel =
+    remoteState.round === 'jeopardy' ? 'Jeopardy!'
+    : remoteState.round === 'double-jeopardy' ? 'Double Jeopardy!'
+    : 'Final Jeopardy!';
+
   return (
     <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#020524] text-white select-none font-sans">
 
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-blue-900/60 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="font-jeopardy-title text-sm font-black text-amber-300 uppercase tracking-wider">
+      <div className="flex items-center justify-between px-3 py-2 border-b-2 border-blue-800/60 bg-[#030b35] shrink-0">
+        <div className="flex flex-col">
+          <span className="font-jeopardy-title text-base font-black text-amber-300 uppercase tracking-wider leading-tight">
             JEOPARDY!
           </span>
-          <span className="text-xs text-blue-400 font-mono">
-            Room: {connectionState.roomCode}
+          <span className="text-[10px] text-blue-300 font-bold uppercase tracking-widest">
+            {roundLabel} · Room {connectionState.roomCode}
           </span>
         </div>
         <button
           onClick={onLeave}
-          className="text-xs text-blue-300 hover:text-white px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-800 cursor-pointer"
+          className="text-xs text-blue-300 hover:text-white px-2.5 py-1 rounded-lg bg-blue-950/80 border border-blue-700 cursor-pointer"
         >
           Leave
         </button>
       </div>
 
+      {/* Whose turn indicator */}
+      {!clueOpen && remoteState.activePickerPlayerId && (
+        <div className={`text-center text-xs font-bold py-1 uppercase tracking-wider shrink-0 ${
+          remoteState.activePickerPlayerId === connectionState.myPlayerId
+            ? 'text-amber-300'
+            : 'text-blue-300'
+        }`}>
+          {remoteState.activePickerPlayerId === connectionState.myPlayerId
+            ? '⭐ Your turn to pick!'
+            : `${remoteState.players.find(p => p.id === remoteState.activePickerPlayerId)?.name ?? 'Opponent'}'s turn to pick`
+          }
+        </div>
+      )}
+
       {/* Board */}
-      <div className="flex-1 overflow-auto p-1.5">
+      <div className="flex-1 p-2 min-h-0 overflow-hidden">
         {categories.length === 0 ? (
           <div className="flex items-center justify-center h-full text-blue-400 text-sm">
             Waiting for host to start the game...
           </div>
         ) : (
           <div
-            className="grid gap-1 h-full"
-            style={{ gridTemplateColumns: `repeat(${categories.length}, 1fr)` }}
+            className="grid gap-1.5 w-full h-full"
+            style={{
+              gridTemplateColumns: `repeat(${categories.length}, 1fr)`,
+              gridTemplateRows: `auto repeat(${values.length}, 1fr)`,
+            }}
           >
             {/* Category headers */}
             {categories.map((cat) => (
               <div
                 key={cat.id}
-                className="bg-[#060ce9] border border-blue-700 rounded-md flex items-center justify-center p-1 text-center min-h-[2.5rem]"
+                className="bg-[#060ce9] border-2 border-blue-500 rounded-lg flex items-center justify-center p-1.5 text-center"
               >
-                <span className="font-jeopardy-title text-[9px] sm:text-[10px] font-black text-white uppercase tracking-wider leading-tight">
+                <span className="font-jeopardy-title text-[10px] sm:text-xs font-black text-white uppercase tracking-wide leading-tight">
                   {cat.name}
                 </span>
               </div>
@@ -332,13 +408,13 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
                   <button
                     key={clue.id}
                     onClick={() => handleTileClick(categories.indexOf(cat), rowIdx, clue)}
-                    disabled={answered || clueOpen}
-                    className={`rounded-md border flex items-center justify-center font-jeopardy-dollar font-black transition-all min-h-[2.2rem] text-xs sm:text-sm cursor-pointer ${
+                    disabled={answered || clueOpen || isNotMyTurn}
+                    className={`rounded-lg flex items-center justify-center font-jeopardy-dollar font-black transition-all text-sm sm:text-base cursor-pointer shadow-md ${
                       answered
-                        ? 'bg-[#010420] border-blue-950/40 text-transparent'
-                        : clueOpen
-                        ? 'bg-[#060ce9] border-blue-700 text-amber-300 opacity-50 cursor-not-allowed'
-                        : 'bg-[#060ce9] border-blue-700 text-amber-300 hover:bg-[#0a14ff] hover:border-amber-400 active:scale-95'
+                        ? 'bg-[#010420] border border-blue-950/30 text-transparent'
+                        : clueOpen || isNotMyTurn
+                        ? 'bg-[#060ce9] border-2 border-blue-600 text-amber-300 opacity-50 cursor-not-allowed'
+                        : 'bg-[#060ce9] border-2 border-blue-600 text-amber-300 hover:bg-[#0a14ff] hover:border-amber-400/70 active:scale-95'
                     }`}
                   >
                     {answered ? '' : `$${clue.value}`}
@@ -351,7 +427,7 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
       </div>
 
       {/* Scoreboard strip */}
-      <div className="shrink-0 border-t border-blue-900/60 px-2 py-1.5">
+      <div className="shrink-0 border-t-2 border-blue-800/60 bg-[#030b35] px-2 py-2">
         <div className="flex gap-2 justify-center overflow-x-auto">
           {remoteState.players.map((p) => {
             const isMe = p.id === connectionState.myPlayerId;
@@ -359,9 +435,9 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
             return (
               <div
                 key={p.id}
-                className={`flex flex-col items-center px-3 py-1 rounded-lg border min-w-[80px] ${
+                className={`flex flex-col items-center px-3 py-2 rounded-lg border min-w-[80px] ${
                   isMe
-                    ? 'bg-gradient-to-b from-[#0b1682] to-[#01041b] border-amber-400 shadow-[0_0_12px_rgba(252,192,20,0.4)]'
+                    ? 'bg-gradient-to-b from-[#0b1682] to-[#01041b] border-amber-400 shadow-[0_0_14px_rgba(252,192,20,0.5)]'
                     : 'bg-[#040828] border-blue-900'
                 }`}
               >
