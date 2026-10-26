@@ -222,7 +222,7 @@ export const ClueModal: React.FC<ClueModalProps> = ({
 
         {/* MAIN CLUE SCREEN (The Classic TV Shot) */}
         <div className="my-auto py-6 sm:py-8 text-center px-2 sm:px-6">
-          <p className="font-jeopardy-clue text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase leading-relaxed text-white tracking-wide drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] max-w-4xl mx-auto">
+          <p className="font-jeopardy-clue text-xl sm:text-2xl md:text-3xl lg:text-3xl uppercase leading-relaxed text-white tracking-wide drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] max-w-4xl mx-auto">
             {clue.clue}
           </p>
 

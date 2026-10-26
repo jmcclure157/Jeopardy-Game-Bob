@@ -164,6 +164,111 @@ export const MASTER_CATEGORY_LIBRARY: CategoryWithMeta[] = [
     ]
   },
 
+  {
+    id: 'lib-j-usageo',
+    name: 'USA GEOGRAPHY',
+    topic: 'Geography',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'usageo-1', value: 200, clue: 'This river forms the natural border between Texas and Mexico.', answer: 'Rio Grande', acceptableAnswers: ['Rio Bravo', 'Rio Grande River'] },
+      { id: 'usageo-2', value: 400, clue: 'The tallest mountain in North America, formerly known as Mount McKinley, sits in this U.S. state.', answer: 'Alaska', acceptableAnswers: ['Alaska, USA'] },
+      { id: 'usageo-3', value: 600, clue: 'This Great Lake is the only one located entirely within the United States.', answer: 'Lake Michigan', acceptableAnswers: ['Michigan'] },
+      { id: 'usageo-4', value: 800, clue: 'Nevada, Utah, Colorado, and Arizona all meet at this geographic landmark.', answer: 'Four Corners', acceptableAnswers: ['The Four Corners'] },
+      { id: 'usageo-5', value: 1000, clue: 'Located in South Dakota, this famous granite monument depicts four U.S. presidents.', answer: 'Mount Rushmore', acceptableAnswers: ['Mt. Rushmore'] }
+    ]
+  },
+  {
+    id: 'lib-j-animals',
+    name: 'ANIMAL KINGDOM',
+    topic: 'Science',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'ani-1', value: 200, clue: 'The fastest land animal on Earth, capable of reaching speeds up to 70 mph.', answer: 'Cheetah', acceptableAnswers: ['Cheetahs'] },
+      { id: 'ani-2', value: 400, clue: 'This large marine mammal is the loudest animal on the planet and also the largest creature ever to live.', answer: 'Blue Whale', acceptableAnswers: ['Blue Whales'] },
+      { id: 'ani-3', value: 600, clue: 'A group of flamingos is called this colorful-sounding collective noun.', answer: 'Flamboyance', acceptableAnswers: ['A flamboyance'] },
+      { id: 'ani-4', value: 800, clue: 'This nocturnal primate from Madagascar is known for its glowing eyes and eerie wail.', answer: 'Aye-aye', acceptableAnswers: ['Aye aye'] },
+      { id: 'ani-5', value: 1000, clue: 'The platypus is one of only five species of this type of mammal that lays eggs, known as a monotreme.', answer: 'Monotreme', acceptableAnswers: ['Monotremes'] }
+    ]
+  },
+  {
+    id: 'lib-j-potus',
+    name: 'U.S. PRESIDENTS',
+    topic: 'History',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'potus-1', value: 200, clue: 'The first President of the United States, who served two terms beginning in 1789.', answer: 'George Washington', acceptableAnswers: ['Washington'] },
+      { id: 'potus-2', value: 400, clue: 'This president signed the Emancipation Proclamation and led the country through the Civil War.', answer: 'Abraham Lincoln', acceptableAnswers: ['Lincoln'] },
+      { id: 'potus-3', value: 600, clue: 'The only U.S. president to serve two non-consecutive terms, defeating Grover Cleveland twice.', answer: 'Grover Cleveland', acceptableAnswers: ['Cleveland'] },
+      { id: 'potus-4', value: 800, clue: 'He became the 35th president — the youngest elected and the first Catholic to hold the office.', answer: 'John F. Kennedy', acceptableAnswers: ['JFK', 'Kennedy'] },
+      { id: 'potus-5', value: 1000, clue: 'This president ordered the atomic bombings of Hiroshima and Nagasaki in August 1945.', answer: 'Harry Truman', acceptableAnswers: ['Truman', 'Harry S. Truman'] }
+    ]
+  },
+  {
+    id: 'lib-j-math',
+    name: 'MATH & NUMBERS',
+    topic: 'Science',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'math-1', value: 200, clue: 'The mathematical constant representing the ratio of a circle\'s circumference to its diameter.', answer: 'Pi', acceptableAnswers: ['π', '3.14159'] },
+      { id: 'math-2', value: 400, clue: 'In a right triangle, the square of the hypotenuse equals the sum of the squares of the other two sides — this theorem\'s name.', answer: "Pythagorean Theorem", acceptableAnswers: ['Pythagoras theorem'] },
+      { id: 'math-3', value: 600, clue: 'This number is both a perfect square and a perfect cube.', answer: '64', acceptableAnswers: ['64', 'sixty-four'] },
+      { id: 'math-4', value: 800, clue: 'The study of shapes, sizes, and properties of figures and spaces is this branch of mathematics.', answer: 'Geometry', acceptableAnswers: ['Geometry'] },
+      { id: 'math-5', value: 1000, clue: 'Named after a 13th-century Italian mathematician, this sequence starts 0, 1, 1, 2, 3, 5, 8, 13...', answer: 'Fibonacci Sequence', acceptableAnswers: ['Fibonacci', 'Fibonacci numbers'] }
+    ]
+  },
+  {
+    id: 'lib-j-holidays',
+    name: 'HOLIDAYS & TRADITIONS',
+    topic: 'Pop Culture',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'hol-1', value: 200, clue: 'On this Mexican holiday, families honor deceased relatives with marigolds, altars, and sugar skulls.', answer: 'Día de los Muertos', acceptableAnswers: ['Day of the Dead', 'Dia de los Muertos'] },
+      { id: 'hol-2', value: 400, clue: 'Hanukkah is also called by this other name, meaning "Festival of Lights."', answer: 'Festival of Lights', acceptableAnswers: ['Festival of Lights'] },
+      { id: 'hol-3', value: 600, clue: 'The Scottish tradition of "first-footing" takes place on the first minutes of this holiday.', answer: "New Year's Day", acceptableAnswers: ["New Year's", 'Hogmanay'] },
+      { id: 'hol-4', value: 800, clue: 'In Brazil, this festival held before Lent is the largest street carnival celebration in the world.', answer: 'Carnival', acceptableAnswers: ['Carnaval', 'Mardi Gras'] },
+      { id: 'hol-5', value: 1000, clue: 'Diwali, the Hindu festival of lights, spans five days and is celebrated by lighting rows of these clay oil lamps.', answer: 'Diyas', acceptableAnswers: ['Diya', 'Oil lamps', 'Clay lamps'] }
+    ]
+  },
+  {
+    id: 'lib-j-languages',
+    name: 'WORLD LANGUAGES',
+    topic: 'Pop Culture',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'lang-1', value: 200, clue: 'The most widely spoken language in the world by number of native speakers.', answer: 'Mandarin Chinese', acceptableAnswers: ['Chinese', 'Mandarin'] },
+      { id: 'lang-2', value: 400, clue: 'This constructed international auxiliary language was created by Ludwig Lazarus Zamenhof in 1887.', answer: 'Esperanto', acceptableAnswers: ['Esperanto'] },
+      { id: 'lang-3', value: 600, clue: 'The only Romance language spoken in the Americas as an official language on the mainland.', answer: 'French', acceptableAnswers: ['French language'] },
+      { id: 'lang-4', value: 800, clue: 'This Scandinavian language is spoken by over 5 million people and is closely related to Danish and Norwegian.', answer: 'Swedish', acceptableAnswers: ['Swedish language'] },
+      { id: 'lang-5', value: 1000, clue: 'With over 800 distinct languages, this Pacific island nation is the most linguistically diverse country on Earth.', answer: 'Papua New Guinea', acceptableAnswers: ['PNG'] }
+    ]
+  },
+  {
+    id: 'lib-j-comics',
+    name: 'COMIC BOOK HEROES',
+    topic: 'Pop Culture',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'comi-1', value: 200, clue: 'Peter Parker gains spider-like superpowers after being bitten by a radioactive spider in this Marvel franchise.', answer: 'Spider-Man', acceptableAnswers: ['Spiderman'] },
+      { id: 'comi-2', value: 400, clue: 'Clark Kent is the mild-mannered secret identity of this DC superhero from Krypton.', answer: 'Superman', acceptableAnswers: ['Superman', 'The Man of Steel'] },
+      { id: 'comi-3', value: 600, clue: 'This mutant X-Man has retractable adamantium claws and a regenerative healing factor.', answer: 'Wolverine', acceptableAnswers: ['Logan', 'Weapon X'] },
+      { id: 'comi-4', value: 800, clue: 'Barbara Gordon, the daughter of Gotham police commissioner James Gordon, fights crime as this superhero.', answer: 'Batgirl', acceptableAnswers: ['Batgirl'] },
+      { id: 'comi-5', value: 1000, clue: 'This 1986 Frank Miller graphic novel redefined Batman with a gritty, noir retelling of his origins.', answer: 'Batman: Year One', acceptableAnswers: ['Year One', 'Batman Year One'] }
+    ]
+  },
+  {
+    id: 'lib-j-travel',
+    name: 'TRAVEL DESTINATIONS',
+    topic: 'Geography',
+    roundType: 'jeopardy',
+    clues: [
+      { id: 'trav-1', value: 200, clue: 'The Eiffel Tower was built in 1889 and stands in this European capital city.', answer: 'Paris', acceptableAnswers: ['Paris, France'] },
+      { id: 'trav-2', value: 400, clue: 'This ancient Incan citadel high in the Andes Mountains of Peru is one of the New Seven Wonders of the World.', answer: 'Machu Picchu', acceptableAnswers: ['Machu Picchu, Peru'] },
+      { id: 'trav-3', value: 600, clue: 'The Great Barrier Reef, the world\'s largest coral reef system, lies off the coast of this Australian state.', answer: 'Queensland', acceptableAnswers: ['Queensland, Australia'] },
+      { id: 'trav-4', value: 800, clue: 'Tourists flock to this island nation south of India to see its ancient temples, tea plantations, and elephants.', answer: 'Sri Lanka', acceptableAnswers: ['Ceylon', 'Sri Lanka'] },
+      { id: 'trav-5', value: 1000, clue: 'The Northern Lights, or Aurora Borealis, are most reliably viewed from this Scandinavian country above the Arctic Circle.', answer: 'Norway', acceptableAnswers: ['Norway', 'Finland', 'Iceland'] }
+    ]
+  },
+
   // --- DOUBLE JEOPARDY CATEGORIES ($400 - $2000) ---
   {
     id: 'lib-dj-us-hist',
@@ -319,6 +424,97 @@ export const MASTER_CATEGORY_LIBRARY: CategoryWithMeta[] = [
       { id: 'djq-3', value: 1200, clue: 'Neil Armstrong spoke the immortal line "That\'s one small step for man, one giant leap for mankind" upon stepping on this body.', answer: 'The Moon', acceptableAnswers: ['Moon', 'Lunar surface'] },
       { id: 'djq-4', value: 1600, clue: '"I\'ll make him an offer he can\'t refuse" is uttered by Marlon Brando as Don Vito Corleone in this crime masterpiece.', answer: 'The Godfather', acceptableAnswers: ['The Godfather Part 1', 'Godfather'] },
       { id: 'djq-5', value: 2000, clue: '"Houston, we have a problem" is famously associated with this ill-fated 1970 lunar mission.', answer: 'Apollo 13', acceptableAnswers: ['Apollo 13 mission'] }
+    ]
+  },
+  {
+    id: 'lib-dj-sciencefact',
+    name: 'SCIENCE FACTS',
+    topic: 'Science',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'djsf-1', value: 400, clue: 'DNA\'s double-helix structure was famously described in a 1953 paper by Watson, Crick, and this crystallographer whose X-ray work was key.', answer: 'Rosalind Franklin', acceptableAnswers: ['Franklin', 'Rosalind Franklin'] },
+      { id: 'djsf-2', value: 800, clue: 'The speed of light in a vacuum is approximately 186,000 miles per second, or about this many kilometers per second.', answer: '300,000', acceptableAnswers: ['299,792', 'three hundred thousand', '300000'] },
+      { id: 'djsf-3', value: 1200, clue: 'The human body has this many pairs of chromosomes in a typical cell, for a total count of 46.', answer: '23', acceptableAnswers: ['Twenty-three', 'twenty three'] },
+      { id: 'djsf-4', value: 1600, clue: 'This chemical process, used by plants to convert sunlight and CO₂ into glucose, produces oxygen as a byproduct.', answer: 'Photosynthesis', acceptableAnswers: ['Photosynthesis'] },
+      { id: 'djsf-5', value: 2000, clue: 'Named after two scientists, this law states that the pressure of a gas is inversely proportional to its volume at constant temperature.', answer: "Boyle's Law", acceptableAnswers: ["Boyle's Law", 'Boyle-Mariotte law'] }
+    ]
+  },
+  {
+    id: 'lib-dj-cuisine',
+    name: 'GLOBAL CUISINE',
+    topic: 'Food & Drink',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'djc-1', value: 400, clue: 'This French cooking technique involves vacuum-sealing food in a bag and cooking it in a water bath at low, precise temperatures.', answer: 'Sous Vide', acceptableAnswers: ['Sous-vide'] },
+      { id: 'djc-2', value: 800, clue: 'Kimchi, bibimbap, and bulgogi are staple dishes of this East Asian country\'s cuisine.', answer: 'Korean', acceptableAnswers: ['South Korea', 'Korea'] },
+      { id: 'djc-3', value: 1200, clue: 'This Italian rice dish is made by slowly adding warm broth to stir-fried arborio rice until creamy.', answer: 'Risotto', acceptableAnswers: ['Risotto'] },
+      { id: 'djc-4', value: 1600, clue: 'Umami is known as the fifth basic taste; it was first isolated from kelp broth in 1908 by this Japanese chemist.', answer: 'Kikunae Ikeda', acceptableAnswers: ['Ikeda'] },
+      { id: 'djc-5', value: 2000, clue: 'This Spanish technique of aging vinegar or wine using a series of fractional blending through oak barrels is called this system.', answer: 'Solera', acceptableAnswers: ['Solera system', 'Solera method'] }
+    ]
+  },
+  {
+    id: 'lib-dj-worldlit',
+    name: 'WORLD LITERATURE',
+    topic: 'Literature',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'djwl-1', value: 400, clue: 'William Shakespeare wrote this tragedy about a Danish prince who seeks revenge for his father\'s murder.', answer: 'Hamlet', acceptableAnswers: ['Hamlet, Prince of Denmark'] },
+      { id: 'djwl-2', value: 800, clue: 'This Fyodor Dostoevsky novel explores guilt and redemption through the story of student Raskolnikov in St. Petersburg.', answer: 'Crime and Punishment', acceptableAnswers: ['Crime & Punishment'] },
+      { id: 'djwl-3', value: 1200, clue: 'Homer\'s epic poem "The Odyssey" chronicles the ten-year journey home of this Greek hero after the fall of Troy.', answer: 'Odysseus', acceptableAnswers: ['Ulysses'] },
+      { id: 'djwl-4', value: 1600, clue: 'This 1605 Miguel de Cervantes novel is widely regarded as the first modern novel in Western literature.', answer: 'Don Quixote', acceptableAnswers: ['Don Quijote', 'Don Quixote de la Mancha'] },
+      { id: 'djwl-5', value: 2000, clue: 'Leo Tolstoy\'s epic following aristocratic families through the Napoleonic Wars is this two-word title.', answer: 'War and Peace', acceptableAnswers: ['Voyna i Mir'] }
+    ]
+  },
+  {
+    id: 'lib-dj-finance',
+    name: 'MONEY & FINANCE',
+    topic: 'Pop Culture',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'djfin-1', value: 400, clue: 'This Wall Street term describes the steady rise of a stock market over an extended period.', answer: 'Bull Market', acceptableAnswers: ['Bull run', 'Bullish market'] },
+      { id: 'djfin-2', value: 800, clue: 'The first Bitcoin transaction to purchase a real-world item bought two of these for 10,000 BTC in 2010.', answer: 'Pizzas', acceptableAnswers: ['Pizza', 'Two pizzas'] },
+      { id: 'djfin-3', value: 1200, clue: 'Warren Buffett\'s holding company, based in Omaha, Nebraska, bears the name of this New England textile firm.', answer: 'Berkshire Hathaway', acceptableAnswers: ['Berkshire'] },
+      { id: 'djfin-4', value: 1600, clue: 'This economic concept describes the invisible hand of the market — coined by Adam Smith in "The Wealth of Nations."', answer: 'Laissez-faire', acceptableAnswers: ['Free market', 'Laissez faire', 'Invisible hand'] },
+      { id: 'djfin-5', value: 2000, clue: 'The Bretton Woods Conference of 1944 established this international financial institution to stabilize global exchange rates.', answer: 'International Monetary Fund', acceptableAnswers: ['IMF', 'The IMF'] }
+    ]
+  },
+  {
+    id: 'lib-dj-uslaw',
+    name: 'LAW & THE COURTS',
+    topic: 'History',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'djlaw-1', value: 400, clue: 'The first ten amendments to the U.S. Constitution are collectively known by this name.', answer: 'Bill of Rights', acceptableAnswers: ['The Bill of Rights'] },
+      { id: 'djlaw-2', value: 800, clue: 'This landmark 1954 Supreme Court case declared racial segregation in public schools unconstitutional.', answer: 'Brown v. Board of Education', acceptableAnswers: ['Brown v Board of Education', 'Brown vs Board of Education'] },
+      { id: 'djlaw-3', value: 1200, clue: 'The Miranda warning that police must read stems from this 1966 Supreme Court case.', answer: 'Miranda v. Arizona', acceptableAnswers: ['Miranda vs Arizona', 'Miranda v Arizona'] },
+      { id: 'djlaw-4', value: 1600, clue: 'The legal concept of "innocent until proven guilty" is formally known by this Latin term used in law.', answer: 'Presumption of Innocence', acceptableAnswers: ['Innocence presumption'] },
+      { id: 'djlaw-5', value: 2000, clue: 'This doctrine allows courts to decline a case if the plaintiff lacks a direct connection or harm from the issue.', answer: 'Standing', acceptableAnswers: ['Legal standing', 'Standing to sue'] }
+    ]
+  },
+  {
+    id: 'lib-dj-70s80s',
+    name: '70s & 80s POP CULTURE',
+    topic: 'Music',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'dj7080-1', value: 400, clue: 'This 1977 sci-fi blockbuster by George Lucas launched a franchise "a long time ago in a galaxy far, far away."', answer: 'Star Wars', acceptableAnswers: ['Star Wars: A New Hope'] },
+      { id: 'dj7080-2', value: 800, clue: 'Rubik\'s Cube, the iconic 3D puzzle toy, was invented in 1974 by this Hungarian professor.', answer: 'Ernő Rubik', acceptableAnswers: ['Erno Rubik', 'Rubik'] },
+      { id: 'dj7080-3', value: 1200, clue: 'This 1982 Michael Jackson album featured the song "Thriller" and is the best-selling album in history.', answer: 'Thriller', acceptableAnswers: ['Thriller album'] },
+      { id: 'dj7080-4', value: 1600, clue: 'This MTV reality television dance show, hosted by Merv Griffin, debuted in 1979 and featured "Soul Train" rival acts.', answer: 'American Bandstand', acceptableAnswers: ['Bandstand'] },
+      { id: 'dj7080-5', value: 2000, clue: 'This 1980 Stephen King horror novel about a haunted hotel was adapted into a classic Kubrick film starring Jack Nicholson.', answer: 'The Shining', acceptableAnswers: ['Shining'] }
+    ]
+  },
+  {
+    id: 'lib-dj-awards',
+    name: 'AWARDS & RECORDS',
+    topic: 'Pop Culture',
+    roundType: 'double-jeopardy',
+    clues: [
+      { id: 'djar-1', value: 400, clue: 'This Swedish pop group is the best-selling music act to come out of Scandinavia, known for hits like "Dancing Queen."', answer: 'ABBA', acceptableAnswers: ['ABBA'] },
+      { id: 'djar-2', value: 800, clue: 'The Nobel Peace Prize has been awarded in this Scandinavian capital city since 1901.', answer: 'Oslo', acceptableAnswers: ['Oslo, Norway'] },
+      { id: 'djar-3', value: 1200, clue: 'Beyoncé holds the record for the most Grammy wins of all time, surpassing this classical conductor who held the record before her.', answer: 'Georg Solti', acceptableAnswers: ['Georg Solti', 'Solti'] },
+      { id: 'djar-4', value: 1600, clue: 'The Pulitzer Prize for Fiction was awarded posthumously only once — to this author for "A Confederacy of Dunces."', answer: 'John Kennedy Toole', acceptableAnswers: ['Kennedy Toole', 'Toole'] },
+      { id: 'djar-5', value: 2000, clue: 'The Fields Medal, often called the Nobel Prize of Mathematics, is awarded every four years to mathematicians under this age.', answer: '40', acceptableAnswers: ['Forty', 'Age 40'] }
     ]
   }
 ];
