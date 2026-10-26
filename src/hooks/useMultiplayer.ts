@@ -10,7 +10,8 @@ export function useMultiplayer(
   onHostReceiveBuzz?: (playerId: string) => void,
   onHostReceiveAnswer?: (playerId: string, answer: string) => void,
   onHostPlayerJoined?: (player: Player) => void,
-  onHostReceiveSelectClue?: (categoryIdx: number, clueIdx: number) => void
+  onHostReceiveSelectClue?: (categoryIdx: number, clueIdx: number) => void,
+  onHostReceiveWager?: (playerId: string, wager: number) => void
 ) {
   const [connectionState, setConnectionState] = useState<PeerConnectionState>({
     isHost: false,
@@ -30,7 +31,7 @@ export function useMultiplayer(
   // Latest synced state received on remote player
   const [remoteState, setRemoteState] = useState<{
     round: RoundType;
-    clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+    clueState: 'none' | 'wager' | 'reading' | 'buzzed' | 'revealed';
     categories: Category[];
     activeClue?: Clue;
     activeCategoryName?: string;
@@ -122,6 +123,8 @@ export function useMultiplayer(
             onHostReceiveAnswer?.(msg.playerId, msg.answer);
           } else if (msg.type === 'SELECT_CLUE') {
             onHostReceiveSelectClue?.(msg.categoryIdx, msg.clueIdx);
+          } else if (msg.type === 'SUBMIT_WAGER') {
+            onHostReceiveWager?.(msg.playerId, msg.wager);
           }
         });
 
@@ -153,7 +156,7 @@ export function useMultiplayer(
       console.error('Failed to init Host Peer:', err);
       setConnectionState(prev => ({ ...prev, status: 'error', errorMessage: err.message }));
     }
-  }, [cleanup, onHostPlayerJoined, onHostReceiveBuzz, onHostReceiveAnswer, onHostReceiveSelectClue]);
+  }, [cleanup, onHostPlayerJoined, onHostReceiveBuzz, onHostReceiveAnswer, onHostReceiveSelectClue, onHostReceiveWager]);
 
   // HOST: Broadcast state to all connected remote players
   const broadcastState = useCallback((state: {
@@ -307,6 +310,17 @@ export function useMultiplayer(
     }
   }, []);
 
+  // PLAYER: Submit Daily Double wager to host
+  const sendWager = useCallback((wager: number) => {
+    if (playerConnectionRef.current && connectionState.myPlayerId) {
+      playerConnectionRef.current.send({
+        type: 'SUBMIT_WAGER',
+        playerId: connectionState.myPlayerId,
+        wager
+      } as NetworkMessage);
+    }
+  }, [connectionState.myPlayerId]);
+
   return {
     connectionState,
     remoteState,
@@ -316,6 +330,7 @@ export function useMultiplayer(
     sendBuzzIn,
     sendAnswer,
     sendSelectClue,
+    sendWager,
     leaveRoom: cleanup
   };
 }

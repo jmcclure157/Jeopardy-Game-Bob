@@ -29,6 +29,7 @@ interface MobileBuzzerControllerProps {
   onSendBuzz: () => void;
   onSendAnswer: (answer: string) => void;
   onSelectClue: (categoryIdx: number, clueIdx: number) => void;
+  onSendWager: (wager: number) => void;
   onLeave: () => void;
 }
 
@@ -38,10 +39,13 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
   onSendBuzz,
   onSendAnswer,
   onSelectClue,
+  onSendWager,
   onLeave
 }) => {
   const [typedAnswer, setTypedAnswer] = useState('');
   const [hasBuzzed, setHasBuzzed] = useState(false);
+  const [wagerInput, setWagerInput] = useState<number>(0);
+  const [wagerError, setWagerError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const myPlayer = remoteState.players.find(p => p.id === connectionState.myPlayerId);
@@ -51,11 +55,18 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
     ? (remoteState.dailyDoubleWager ?? remoteState.activeClueValue ?? 0)
     : (remoteState.activeClueValue ?? 0);
 
-  // Reset buzz state when clue closes
+  // Reset state when clue closes; init wager when DD opens
   useEffect(() => {
     if (remoteState.clueState === 'none') {
       setHasBuzzed(false);
       setTypedAnswer('');
+      setWagerError(null);
+    }
+    if (remoteState.clueState === 'wager') {
+      const maxRound = remoteState.round === 'jeopardy' ? 1000 : 2000;
+      const score = myPlayer?.score ?? 0;
+      setWagerInput(Math.min(Math.max(score, maxRound), Math.max(score, maxRound)));
+      setWagerError(null);
     }
   }, [remoteState.clueState]);
 
@@ -89,7 +100,78 @@ export const MobileBuzzerController: React.FC<MobileBuzzerControllerProps> = ({
   // ─── CLUE OVERLAY ───────────────────────────────────────────────
   const ClueOverlay = () => {
     if (!clueOpen) return null;
+    const isWagerPhase = remoteState.clueState === 'wager';
     const answered = remoteState.clueState === 'revealed';
+
+    // Wager screen
+    if (isWagerPhase) {
+      const maxRound = remoteState.round === 'jeopardy' ? 1000 : 2000;
+      const score = myPlayer?.score ?? 0;
+      const maxWager = Math.max(score, maxRound);
+      const minWager = 5;
+
+      const handleWagerSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (wagerInput < minWager || wagerInput > maxWager) {
+          setWagerError(`Wager must be between $${minWager} and $${maxWager}`);
+          return;
+        }
+        onSendWager(wagerInput);
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-sm bg-gradient-to-b from-[#0a1e64] to-[#02071a] border-4 border-amber-400 rounded-2xl shadow-[0_0_50px_rgba(251,191,36,0.6)] p-6 text-center text-white space-y-5">
+            <div>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-widest mb-3">
+                <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                Daily Double!
+              </span>
+              <p className="text-2xl font-black font-jeopardy-title text-amber-300 uppercase tracking-wider">
+                Place Your Wager
+              </p>
+              <p className="text-xs text-blue-200 mt-1">
+                Score: ${score} &nbsp;·&nbsp; Max: ${maxWager}
+              </p>
+            </div>
+
+            <form onSubmit={handleWagerSubmit} className="space-y-3">
+              <div className="relative flex items-center">
+                <span className="absolute left-4 text-amber-400 font-bold text-2xl">$</span>
+                <input
+                  type="number"
+                  min={minWager}
+                  max={maxWager}
+                  value={wagerInput}
+                  onChange={(e) => {
+                    setWagerInput(Number(e.target.value));
+                    setWagerError(null);
+                  }}
+                  className="w-full bg-blue-950/90 border-2 border-amber-400 rounded-xl py-3 pl-10 pr-4 text-2xl font-black text-amber-300 text-center focus:outline-none focus:ring-4 focus:ring-amber-400/50"
+                />
+              </div>
+              {wagerError && <p className="text-rose-400 text-xs font-semibold">{wagerError}</p>}
+
+              <div className="flex gap-2 justify-center">
+                <button type="button" onClick={() => setWagerInput(maxWager)}
+                  className="px-3 py-1.5 rounded-lg bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-400/50 text-yellow-300 text-xs font-bold uppercase">
+                  All In (${maxWager})
+                </button>
+                <button type="button" onClick={() => setWagerInput(maxRound)}
+                  className="px-3 py-1.5 rounded-lg bg-blue-800/40 hover:bg-blue-700/50 border border-blue-400/40 text-blue-200 text-xs font-bold uppercase">
+                  Max Round (${maxRound})
+                </button>
+              </div>
+
+              <button type="submit"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-blue-950 font-black rounded-xl text-sm uppercase tracking-wider shadow-lg transition-all active:scale-95 cursor-pointer">
+                Lock In Wager
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/95 backdrop-blur-md animate-fadeIn">

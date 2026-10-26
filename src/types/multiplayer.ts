@@ -6,7 +6,7 @@ export type NetworkMessage =
   | {
       type: 'STATE_SYNC';
       round: RoundType;
-      clueState: 'none' | 'reading' | 'buzzed' | 'revealed';
+      clueState: 'none' | 'wager' | 'reading' | 'buzzed' | 'revealed';
       categories: Category[];
       activeClue?: Clue;
       activeCategoryName?: string;

@@ -91,6 +91,14 @@ export default function JeopardyApp() {
     selectClue(categoryIdx, clueIdx);
   }, [selectClue]);
 
+  // Handle remote player submitting a Daily Double wager
+  const handleHostReceiveWager = useCallback((playerId: string, wager: number) => {
+    setDailyDoubleWager(wager);
+    setIsWagerConfirmed(true);
+    const pIdx = players.findIndex(p => p.id === playerId);
+    if (pIdx !== -1) setActivePlayerIndex(pIdx);
+  }, [players, setDailyDoubleWager, setIsWagerConfirmed, setActivePlayerIndex]);
+
   // WebRTC Multiplayer Hook
   const {
     connectionState,
@@ -101,12 +109,14 @@ export default function JeopardyApp() {
     sendBuzzIn,
     sendAnswer,
     sendSelectClue,
+    sendWager,
     leaveRoom
   } = useMultiplayer(
     handleHostReceiveBuzz,
     handleHostReceiveAnswer,
     handleHostPlayerJoined,
-    handleHostReceiveSelectClue
+    handleHostReceiveSelectClue,
+    handleHostReceiveWager
   );
 
   // Check URL parameters on mount (?role=player&room=CODE)
@@ -125,9 +135,13 @@ export default function JeopardyApp() {
   // Broadcast game state to connected remote players whenever state changes
   useEffect(() => {
     if (connectionState.isHost && connectionState.status === 'connected') {
-      let clueState: 'none' | 'reading' | 'buzzed' | 'revealed' = 'none';
+      let clueState: 'none' | 'wager' | 'reading' | 'buzzed' | 'revealed' = 'none';
       if (activeClueData) {
-        clueState = buzzedPlayerId ? 'buzzed' : 'reading';
+        if (isDailyDoubleActive && !isWagerConfirmed) {
+          clueState = 'wager';
+        } else {
+          clueState = buzzedPlayerId ? 'buzzed' : 'reading';
+        }
       }
 
       const buzzedPlayer = players.find(p => p.id === buzzedPlayerId);
@@ -160,6 +174,7 @@ export default function JeopardyApp() {
     buzzedPlayerId,
     players,
     isDailyDoubleActive,
+    isWagerConfirmed,
     dailyDoubleWager,
     broadcastState
   ]);
@@ -192,6 +207,7 @@ export default function JeopardyApp() {
           onSendBuzz={sendBuzzIn}
           onSendAnswer={sendAnswer}
           onSelectClue={sendSelectClue}
+          onSendWager={sendWager}
           onLeave={() => {
             leaveRoom();
             setIsPlayerMode(false);
