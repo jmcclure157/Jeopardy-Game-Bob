@@ -280,7 +280,7 @@ export default function JeopardyApp() {
 
   // TV Host Screen View
   return (
-    <main className="min-h-screen flex flex-col justify-between bg-[#020524] text-white selection:bg-amber-400 selection:text-blue-950 font-sans">
+    <main className="h-screen max-h-screen overflow-hidden flex flex-col justify-between bg-[#020524] text-white selection:bg-amber-400 selection:text-blue-950 font-sans">
       {/* Header Bar with Shuffle, Choose Category, and Host Multiplayer Controls */}
       <Header
         round={round}
@@ -299,11 +299,11 @@ export default function JeopardyApp() {
       />
 
       {/* Main Game Screen */}
-      <div className="flex-1 flex flex-col justify-center items-center py-2 sm:py-4 w-full">
+      <div className="flex-1 flex flex-col justify-center items-center px-2 py-0.5 w-full min-h-0 overflow-y-auto sm:overflow-hidden">
         {round === 'game-over' ? (
           <WinnerPodium players={players} onRestart={restartGame} />
         ) : (
-          <div className="w-full space-y-3 sm:space-y-4">
+          <div className="w-full space-y-1 sm:space-y-1.5 flex flex-col items-center justify-center my-auto">
             <GameBoard
               categories={currentCategories}
               onSelectClue={selectClue}
@@ -322,14 +322,14 @@ export default function JeopardyApp() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full flex items-center justify-between px-4 py-2 text-[11px] text-blue-400/50 border-t border-blue-950">
-        <span>Classic Jeopardy! Game Show App • Built with Next.js & Tailwind CSS</span>
+      <footer className="w-full flex items-center justify-between px-3 py-1 text-[10px] text-blue-400/50 border-t border-blue-950/80 shrink-0">
+        <span>Classic Jeopardy! Game Show App</span>
         <button
           onClick={() => setIsPlayerMode(true)}
           className="flex items-center gap-1 text-blue-300 hover:text-amber-300 transition-colors font-medium"
         >
-          <Smartphone className="w-3.5 h-3.5" />
-          <span>Switch to Phone Buzzer Mode</span>
+          <Smartphone className="w-3 h-3" />
+          <span>Switch to Phone Buzzer</span>
         </button>
       </footer>
 

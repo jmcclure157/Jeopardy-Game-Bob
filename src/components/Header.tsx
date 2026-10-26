@@ -50,30 +50,28 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="w-full bg-gradient-to-r from-[#010418] via-[#040c36] to-[#010418] border-b-2 border-amber-400/60 shadow-2xl px-3 sm:px-6 py-2.5 select-none">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
+    <header className="w-full bg-gradient-to-r from-[#010418] via-[#040c36] to-[#010418] border-b border-amber-400/60 shadow-lg px-2 sm:px-4 py-1.5 select-none shrink-0">
+      <div className="max-w-6xl mx-auto flex flex-row items-center justify-between gap-2">
         
         {/* Logo & Round Title */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center">
-            <span className="text-2xl sm:text-3xl md:text-4xl font-black font-jeopardy-title tracking-widest text-amber-300 drop-shadow-[0_2px_12px_rgba(252,192,20,0.8)] uppercase">
-              JEOPARDY!
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xl sm:text-2xl font-black font-jeopardy-title tracking-widest text-amber-300 drop-shadow-[0_2px_8px_rgba(252,192,20,0.8)] uppercase">
+            JEOPARDY!
+          </span>
 
-          <div className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-900/90 border border-blue-400/50 text-blue-100 shadow-inner">
+          <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-900/90 border border-blue-400/50 text-blue-100">
             {getRoundLabel(round)}
-          </div>
+          </span>
         </div>
 
         {/* Board Controls: Pack Selector + Shuffle + Custom Picker + Next Round */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
           
           {/* Preset Tournament Packs */}
           <select
             value={packIndex}
             onChange={(e) => onSelectPack(Number(e.target.value))}
-            className="bg-blue-950/90 text-amber-300 text-xs sm:text-sm font-bold border-2 border-amber-400/60 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-md"
+            className="bg-blue-950/90 text-amber-300 text-xs font-bold border border-amber-400/60 rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
           >
             {GAME_PACKS.map((pack, idx) => (
               <option key={pack.id} value={idx}>
@@ -87,9 +85,9 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onShuffleBoard}
               title="Randomize & Shuffle 6 Categories"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-900/80 hover:bg-blue-800 text-amber-300 border border-amber-400/50 text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-900/80 hover:bg-blue-800 text-amber-300 border border-amber-400/50 text-xs font-bold transition-all cursor-pointer"
             >
-              <Shuffle className="w-3.5 h-3.5" />
+              <Shuffle className="w-3 h-3" />
               <span className="hidden sm:inline">Shuffle</span>
             </button>
           )}
@@ -99,10 +97,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenCategoryPicker}
               title="Choose Specific 6 Categories"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-900/80 hover:bg-blue-800 text-amber-300 border border-amber-400/50 text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-900/80 hover:bg-blue-800 text-amber-300 border border-amber-400/50 text-xs font-bold transition-all cursor-pointer"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Choose Categories</span>
+              <SlidersHorizontal className="w-3 h-3" />
+              <span className="hidden sm:inline">Categories</span>
             </button>
           )}
 
@@ -110,31 +108,31 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenMultiplayer}
             title="Host Multiplayer Game (Join from Phones)"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-700 to-blue-800 hover:from-indigo-600 hover:to-blue-700 text-amber-300 border border-amber-400/60 text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-indigo-700 to-blue-800 hover:from-indigo-600 hover:to-blue-700 text-amber-300 border border-amber-400/60 text-xs font-bold transition-all cursor-pointer shadow"
           >
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-1.5 w-1.5">
               <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${connectedPlayerCount > 0 ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${connectedPlayerCount > 0 ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+              <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${connectedPlayerCount > 0 ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
             </span>
-            <span>{connectedPlayerCount > 0 ? `${connectedPlayerCount} Phone${connectedPlayerCount > 1 ? 's' : ''}` : 'Host Phone Buzzers'}</span>
+            <span>{connectedPlayerCount > 0 ? `${connectedPlayerCount} Phone${connectedPlayerCount > 1 ? 's' : ''}` : 'Buzzers'}</span>
           </button>
 
           {/* Next Round Button */}
           {round !== 'game-over' && (
             <button
               onClick={onNextRound}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-black transition-all shadow-md cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 isRoundComplete
-                  ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-blue-950 animate-pulse hover:brightness-110 ring-2 ring-white'
+                  ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-blue-950 animate-pulse hover:brightness-110'
                   : 'bg-blue-900/90 hover:bg-blue-800 text-blue-100 border border-blue-500/40'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3 h-3 text-amber-400" />
               <span>
                 {round === 'jeopardy'
-                  ? 'Double Jeopardy'
+                  ? 'Double Jeop'
                   : round === 'double-jeopardy'
-                  ? 'Final Jeopardy'
+                  ? 'Final Jeop'
                   : 'Finish'}
               </span>
             </button>
@@ -144,27 +142,27 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onToggleSound}
             title={soundEnabled ? 'Mute SFX' : 'Enable SFX'}
-            className="p-2 rounded-xl bg-blue-950 hover:bg-blue-900 text-blue-200 border border-blue-500/40 transition-colors cursor-pointer shadow-sm"
+            className="p-1 rounded-lg bg-blue-950 hover:bg-blue-900 text-blue-200 border border-blue-500/40 transition-colors cursor-pointer"
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-300" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-amber-300" /> : <VolumeX className="w-3.5 h-3.5 text-gray-400" />}
           </button>
 
           {/* Rules Modal */}
           <button
             onClick={onOpenRules}
             title="How to Play"
-            className="p-2 rounded-xl bg-blue-950 hover:bg-blue-900 text-blue-200 border border-blue-500/40 transition-colors cursor-pointer shadow-sm"
+            className="p-1 rounded-lg bg-blue-950 hover:bg-blue-900 text-blue-200 border border-blue-500/40 transition-colors cursor-pointer"
           >
-            <HelpCircle className="w-4 h-4 text-blue-300" />
+            <HelpCircle className="w-3.5 h-3.5 text-blue-300" />
           </button>
 
           {/* Restart Button */}
           <button
             onClick={onRestart}
             title="Reset Game"
-            className="p-2 rounded-xl bg-blue-950 hover:bg-rose-950 text-blue-200 hover:text-rose-200 border border-blue-500/40 transition-colors cursor-pointer shadow-sm"
+            className="p-1 rounded-lg bg-blue-950 hover:bg-rose-950 text-blue-200 hover:text-rose-200 border border-blue-500/40 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
 
