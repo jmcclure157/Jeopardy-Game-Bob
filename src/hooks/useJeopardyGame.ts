@@ -247,8 +247,15 @@ export function useJeopardyGame() {
     setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, name: newName } : p));
   }, []);
 
+  const addPlayer = useCallback((newPlayer: Player) => {
+    setPlayers(prev => {
+      if (prev.some(p => p.id === newPlayer.id)) return prev;
+      return [...prev, newPlayer];
+    });
+  }, []);
+
   const setPlayerCount = useCallback((count: number) => {
-    if (count < 1 || count > 3) return;
+    if (count < 1 || count > 6) return;
     setPlayers(DEFAULT_PLAYERS.slice(0, count));
   }, []);
 
@@ -316,6 +323,7 @@ export function useJeopardyGame() {
     adjustPlayerScore,
     updatePlayerName,
     setPlayerCount,
+    addPlayer,
     setDailyDoubleWager,
     setIsWagerConfirmed,
     goToNextRound,

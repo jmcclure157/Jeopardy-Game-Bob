@@ -15,8 +15,10 @@ interface HeaderProps {
   onToggleSound: () => void;
   onRestart: () => void;
   onOpenRules: () => void;
+  onOpenMultiplayer: () => void;
   onNextRound: () => void;
   isRoundComplete: boolean;
+  connectedPlayerCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -29,8 +31,10 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSound,
   onRestart,
   onOpenRules,
+  onOpenMultiplayer,
   onNextRound,
-  isRoundComplete
+  isRoundComplete,
+  connectedPlayerCount = 0
 }) => {
   const getRoundLabel = (r: RoundType) => {
     switch (r) {
@@ -101,6 +105,19 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Choose Categories</span>
             </button>
           )}
+
+          {/* Multiplayer Host Modal Button */}
+          <button
+            onClick={onOpenMultiplayer}
+            title="Host Multiplayer Game (Join from Phones)"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-700 to-blue-800 hover:from-indigo-600 hover:to-blue-700 text-amber-300 border border-amber-400/60 text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${connectedPlayerCount > 0 ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${connectedPlayerCount > 0 ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+            </span>
+            <span>{connectedPlayerCount > 0 ? `${connectedPlayerCount} Phone${connectedPlayerCount > 1 ? 's' : ''}` : 'Host Phone Buzzers'}</span>
+          </button>
 
           {/* Next Round Button */}
           {round !== 'game-over' && (

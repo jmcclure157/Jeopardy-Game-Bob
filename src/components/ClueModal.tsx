@@ -12,6 +12,7 @@ interface ClueModalProps {
   activePlayerIndex: number;
   isDailyDouble: boolean;
   dailyDoubleWager: number;
+  externalBuzzedPlayerId?: string | null;
   onSubmitAnswer: (answer: string, playerId: string, customValue?: number) => AnswerCheckResult | undefined;
   onHostOverride: (playerId: string, isCorrect: boolean, customValue?: number) => void;
   onPassClue: () => void;
@@ -25,6 +26,7 @@ export const ClueModal: React.FC<ClueModalProps> = ({
   activePlayerIndex,
   isDailyDouble,
   dailyDoubleWager,
+  externalBuzzedPlayerId,
   onSubmitAnswer,
   onHostOverride,
   onPassClue,
@@ -32,11 +34,11 @@ export const ClueModal: React.FC<ClueModalProps> = ({
 }) => {
   const effectiveValue = isDailyDouble ? dailyDoubleWager : clue.value;
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>(
-    players[activePlayerIndex]?.id || players[0]?.id || 'p1'
+    externalBuzzedPlayerId || players[activePlayerIndex]?.id || players[0]?.id || 'p1'
   );
 
   // Buzz-in state (Daily doubles bypass buzz-in)
-  const [isBuzzedIn, setIsBuzzedIn] = useState<boolean>(isDailyDouble);
+  const [isBuzzedIn, setIsBuzzedIn] = useState<boolean>(isDailyDouble || !!externalBuzzedPlayerId);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [showAnswer, setShowAnswer] = useState(false);
   const [result, setResult] = useState<AnswerCheckResult | null>(null);
@@ -61,6 +63,13 @@ export const ClueModal: React.FC<ClueModalProps> = ({
       inputRef.current?.focus();
     }, 50);
   };
+
+  // Sync external buzz from remote mobile player
+  useEffect(() => {
+    if (externalBuzzedPlayerId && !isBuzzedIn) {
+      handleBuzzIn(externalBuzzedPlayerId);
+    }
+  }, [externalBuzzedPlayerId]);
 
   // Keyboard navigation: Spacebar to Buzz in, Escape to return, Enter to submit/return
   useEffect(() => {
