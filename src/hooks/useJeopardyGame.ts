@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { GamePack, Player, RoundType, Clue, Category } from '../types/game';
 import { GAME_PACKS } from '../data/gamePacks';
+import { MASTER_CATEGORY_LIBRARY, CategoryWithMeta } from '../data/categoryLibrary';
 import { checkAnswer } from '../lib/answer-matcher';
 import { soundFx } from '../lib/sound';
 
@@ -82,6 +83,48 @@ export function useJeopardyGame() {
     selectGamePack(packIndex);
   }, [selectGamePack, packIndex]);
 
+  // Shuffle Categories for the current round
+  const shuffleCategories = useCallback(() => {
+    soundFx.playDailyDouble();
+    const targetRoundType = round === 'double-jeopardy' ? 'double-jeopardy' : 'jeopardy';
+    const pool = MASTER_CATEGORY_LIBRARY.filter(c => c.roundType === targetRoundType);
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    const new6 = JSON.parse(JSON.stringify(shuffled.slice(0, 6)));
+
+    // Ensure Daily Double presence
+    let hasDailyDouble = new6.some((cat: Category) => cat.clues.some(c => c.isDailyDouble));
+    if (!hasDailyDouble && new6.length > 0) {
+      const randomCatIdx = Math.floor(Math.random() * new6.length);
+      const randomClueIdx = Math.floor(Math.random() * 5);
+      new6[randomCatIdx].clues[randomClueIdx].isDailyDouble = true;
+    }
+
+    if (round === 'jeopardy') {
+      setJeopardyCategories(new6);
+    } else if (round === 'double-jeopardy') {
+      setDoubleJeopardyCategories(new6);
+    }
+  }, [round]);
+
+  // Apply custom chosen categories
+  const setCustomCategories = useCallback((categories: Category[]) => {
+    const cloned = JSON.parse(JSON.stringify(categories));
+    
+    // Ensure Daily Double presence
+    let hasDailyDouble = cloned.some((cat: Category) => cat.clues.some(c => c.isDailyDouble));
+    if (!hasDailyDouble && cloned.length > 0) {
+      const randomCatIdx = Math.floor(Math.random() * cloned.length);
+      const randomClueIdx = Math.floor(Math.random() * 5);
+      cloned[randomCatIdx].clues[randomClueIdx].isDailyDouble = true;
+    }
+
+    if (round === 'jeopardy') {
+      setJeopardyCategories(cloned);
+    } else if (round === 'double-jeopardy') {
+      setDoubleJeopardyCategories(cloned);
+    }
+  }, [round]);
+
   // Select Clue from Board
   const selectClue = useCallback((categoryIdx: number, clueIdx: number) => {
     const cats = round === 'jeopardy' ? jeopardyCategories : doubleJeopardyCategories;
@@ -153,13 +196,11 @@ export function useJeopardyGame() {
       soundFx.playCorrect();
       setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, score: p.score + pointValue } : p));
       markClueAnswered(categoryIdx, clueIdx, playerId, true);
-      // Give control to the player who answered correctly
       const pIdx = players.findIndex(p => p.id === playerId);
       if (pIdx !== -1) setActivePlayerIndex(pIdx);
     } else {
       soundFx.playIncorrect();
       setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, score: p.score - pointValue } : p));
-      // For daily doubles, incorrect answer finishes the clue immediately
       if (isDailyDoubleActive) {
         markClueAnswered(categoryIdx, clueIdx, playerId, false);
       }
@@ -265,6 +306,8 @@ export function useJeopardyGame() {
     setActivePlayerIndex,
     selectGamePack,
     restartGame,
+    shuffleCategories,
+    setCustomCategories,
     selectClue,
     closeClueModal,
     submitAnswer,
